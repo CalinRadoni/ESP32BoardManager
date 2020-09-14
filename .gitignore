@@ -1,0 +1,13 @@
+# ignore archives
+*.7z
+*.zip
+
+# ignore Visual Studio Code's workspace files
+*.code-workspace
+
+# ignore auxiliary files
+/.vscode/.browse.VC.db
+
+# ignore auxiliary directories
+/notes/
+build/
