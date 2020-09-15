@@ -162,7 +162,7 @@ public:
      * This function need not to be called directly !
      * This function is called automatically from the default event loop.
      */
-    void EventHandler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
+    void EventHandler(esp_event_base_t event_base, int32_t event_id, void* event_data);
 
 private:
     WiFiManagerStatus workStatus;
@@ -181,7 +181,5 @@ private:
     uint16_t foundAPcnt;
     void ExtractAPScanResults(void);
 };
-
-extern WiFiManager theWiFiManager;
 
 #endif

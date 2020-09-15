@@ -29,7 +29,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Board.h"
 #include "Configuration.h"
-#include "WiFiManager.h"
 #include "pax_http_server.h"
 
 // -----------------------------------------------------------------------------

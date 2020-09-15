@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "freertos/FreeRTOS.h"
 #include "BoardEvents.h"
 #include "pax_http_server.h"
+#include "WiFiManager.h"
 
 #include "esp32_hal_gpio.h"
 #include "esp32_hal_adc.h"
@@ -117,6 +118,7 @@ protected:
     EventGroupHandler events;
 
     PaxHttpServer *httpServer;
+    WiFiManager theWiFiManager;
 
     bool initialized;
 

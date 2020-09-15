@@ -35,8 +35,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // -----------------------------------------------------------------------------
 
-WiFiManager theWiFiManager;
-
 static const char* TAG = "WiFiManager";
 
 const uint32_t msToWaitAfterStop = 30000;
@@ -45,7 +43,9 @@ const uint32_t msToWaitAfterStop = 30000;
 
 static void default_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
-    theWiFiManager.EventHandler(arg, event_base, event_id, event_data);
+    WiFiManager* theWiFiManager = static_cast<WiFiManager*>(arg);
+    if (theWiFiManager != nullptr)
+        theWiFiManager->EventHandler(event_base, event_id, event_data);
 }
 
 // -----------------------------------------------------------------------------
@@ -91,13 +91,13 @@ esp_err_t WiFiManager::Initialize(void)
         return err;
     }
 
-    err = esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &default_event_handler, NULL);
+    err = esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &default_event_handler, this);
     if (err != ESP_OK) {
         workStatus = WiFiManagerStatus::error;
         return err;
     }
 
-    err = esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &default_event_handler, NULL);
+    err = esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &default_event_handler, this);
     if (err != ESP_OK) {
         workStatus = WiFiManagerStatus::error;
         return err;
@@ -327,7 +327,7 @@ uint8_t WiFiManager::GetDisconnectReason(void)
     return disconnectReason;
 }
 
-void WiFiManager::EventHandler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+void WiFiManager::EventHandler(esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
     esp_err_t err = ESP_OK;
 
