@@ -28,7 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pax_http_server.h"
 #include "Configuration.h"
 #include "cJSON.h"
-#include "ESP32SimpleOTA.h"
 
 // -----------------------------------------------------------------------------
 
@@ -61,6 +60,7 @@ PaxHttpServer::PaxHttpServer(void)
     serverQueue = 0;
     serverHandle = nullptr;
     working = false;
+    simpleOTA = nullptr;
 }
 
 PaxHttpServer::~PaxHttpServer()
@@ -68,10 +68,15 @@ PaxHttpServer::~PaxHttpServer()
     StopServer();
 }
 
-esp_err_t PaxHttpServer::StartServer(void)
+esp_err_t PaxHttpServer::StartServer(ESP32SimpleOTA* sOTA)
 {
     if (serverHandle != nullptr)
         StopServer();
+
+    simpleOTA = sOTA;
+    if (simpleOTA == nullptr) {
+        return ESP_ERR_INVALID_ARG;
+    }
 
     serverQueue = xQueueCreate(queueLength, sizeof(HTTPCommand));
     if (serverQueue == 0) {
@@ -325,7 +330,13 @@ esp_err_t PaxHttpServer::HandleOTA(httpd_req_t* req)
     bool done = false;
     esp_err_t result = ESP_OK;
 
-    if (pageLen > simpleOTA.GetMaxImageSize()) {
+    if (simpleOTA == nullptr) {
+        ESP_LOGE(TAG, "OTA is null !");
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "OTA is not available !");
+        return ESP_FAIL;
+    }
+
+    if (pageLen > simpleOTA->GetMaxImageSize()) {
         ESP_LOGE(TAG, "OTA content is too big (%d bytes) !", pageLen);
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "OTA content is too big !");
         return ESP_FAIL;
@@ -347,11 +358,11 @@ esp_err_t PaxHttpServer::HandleOTA(httpd_req_t* req)
             if (!headerReceived) {
                 headerReceived = true;
 
-                result = simpleOTA.Begin();
+                result = simpleOTA->Begin();
                 if (result != ESP_OK) { return result; }
             }
 
-            result = simpleOTA.Write(buff, rxLen);
+            result = simpleOTA->Write(buff, rxLen);
             if (result != ESP_OK) { return result; }
 
             if (pageLen > rxLen) {
@@ -366,7 +377,7 @@ esp_err_t PaxHttpServer::HandleOTA(httpd_req_t* req)
         return ESP_FAIL;
     }
 
-    result = simpleOTA.End();
+    result = simpleOTA->End();
     if (result != ESP_OK) { return result; }
 
     ESP_LOGI(TAG, "OTA done, you should restart");

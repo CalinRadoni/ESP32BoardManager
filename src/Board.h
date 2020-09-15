@@ -30,6 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "esp32_hal_i2c.h"
 #include "esp32_hal_spi.h"
 
+// TODO: In the Board class add functions for reading ALL board related data, default_mac, chip_info_ app_info, ...
+
 class Board
 {
 public:
@@ -112,13 +114,21 @@ public:
      */
     void Disconnect(void);
 
-    // TODO: In the Board class add functions for reading ALL board related data, default_mac, chip_info_ app_info, ...
+    /**
+     * @brief returns ESP32SimpleOTA::CheckApplicationImage()
+     */
+    esp_err_t CheckApplicationImage(void);
+
+    // TODO This must go away
+    /* quick hack because StartAP does not start the http server */
+    ESP32SimpleOTA* GetOTA(void);
 
 protected:
     EventGroupHandler events;
 
     PaxHttpServer *httpServer;
     WiFiManager theWiFiManager;
+    ESP32SimpleOTA simpleOTA;
 
     bool initialized;
 

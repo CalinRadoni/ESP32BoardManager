@@ -157,7 +157,7 @@ esp_err_t Board::StartConfigurationAP(void)
         return err;
     }
 
-    err = httpServer->StartServer();
+    err = httpServer->StartServer(&simpleOTA);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "%d StartServer", err);
         return err;
@@ -342,4 +342,14 @@ esp_err_t Board::Connect(void)
 void Board::Disconnect(void)
 {
     theWiFiManager.Stop(true);
+}
+
+esp_err_t Board::CheckApplicationImage(void)
+{
+    return simpleOTA.CheckApplicationImage();
+}
+
+ESP32SimpleOTA* Board::GetOTA(void)
+{
+    return &simpleOTA;
 }
