@@ -46,7 +46,6 @@ Board::Board(void)
 {
     initialized = false;
     memset(MAC, 0, 6);
-    httpServer = nullptr;
 }
 
 Board::~Board(void)
@@ -54,15 +53,10 @@ Board::~Board(void)
     //
 }
 
-esp_err_t Board::Initialize(PaxHttpServer *theHttpServer)
+esp_err_t Board::Initialize(void)
 {
     if (initialized)
         return ESP_ERR_INVALID_STATE;
-
-    if (theHttpServer == nullptr)
-        return ESP_ERR_INVALID_ARG;
-
-    httpServer = theHttpServer;
 
     esp_err_t err = EarlyInit();
     if (err != ESP_OK) {
@@ -157,13 +151,13 @@ esp_err_t Board::StartConfigurationAP(void)
         return err;
     }
 
+/*
     err = httpServer->StartServer(&simpleOTA);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "%d StartServer", err);
         return err;
     }
 
-/*
     bool done = false;
 
     while (!done) {
@@ -238,11 +232,11 @@ esp_err_t Board::StartConfigurationAP(void)
             i--;
         }
     }
-*/
 
     httpServer->StopServer();
-    theWiFiManager.Stop(true);
-    theWiFiManager.Clean();
+*/
+
+    StopWiFi();
 
     Restart();
 
@@ -273,7 +267,7 @@ esp_err_t Board::StartAP(void)
     return ESP_OK;
 }
 
-void Board::StopAP(void)
+void Board::StopWiFi(void)
 {
     theWiFiManager.Stop(true);
     theWiFiManager.Clean();
@@ -347,9 +341,4 @@ void Board::Disconnect(void)
 esp_err_t Board::CheckApplicationImage(void)
 {
     return simpleOTA.CheckApplicationImage();
-}
-
-ESP32SimpleOTA* Board::GetOTA(void)
-{
-    return &simpleOTA;
 }

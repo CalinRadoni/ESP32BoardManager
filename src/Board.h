@@ -53,7 +53,7 @@ public:
      * - NVS Initialization fails
      * - CriticalInit does not return ESP_OK
      */
-    esp_err_t Initialize(PaxHttpServer *theHttpServer);
+    esp_err_t Initialize(void);
 
     virtual esp_err_t EarlyInit(void) = 0;
     virtual esp_err_t CriticalInit(void) = 0;
@@ -78,10 +78,13 @@ public:
      * @brief Start the board in AP mode
      */
     esp_err_t StartAP(void);
+
     /**
-     * @brief Stop the AP mode
+     * @brief Stop the WiFi
+     *
+     * Call this function when you're done with the mode started with StartXXX functions
      */
-    void StopAP(void);
+    void StopWiFi(void);
 
     /**
      * @brief Returns the base MAC address which is factory-programmed by Espressif in BLK0 of EFUSE.
@@ -119,14 +122,9 @@ public:
      */
     esp_err_t CheckApplicationImage(void);
 
-    // TODO This must go away
-    /* quick hack because StartAP does not start the http server */
-    ESP32SimpleOTA* GetOTA(void);
-
 protected:
     EventGroupHandler events;
 
-    PaxHttpServer *httpServer;
     WiFiManager theWiFiManager;
     ESP32SimpleOTA simpleOTA;
 

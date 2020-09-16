@@ -66,6 +66,43 @@ PaxHttpServer::PaxHttpServer(void)
 PaxHttpServer::~PaxHttpServer()
 {
     StopServer();
+    DestroyQueue();
+}
+
+bool PaxHttpServer::Initialize(void) {
+    if (serverQueue != 0) {
+        DestroyQueue();
+    }
+    return CreateQueue();
+}
+
+QueueHandle_t PaxHttpServer::GetQueueHandle(void) {
+    if (serverQueue == 0) {
+        CreateQueue();
+    }
+    return serverQueue;
+}
+
+bool PaxHttpServer::CreateQueue(void)
+{
+    if (serverQueue != 0) {
+        xQueueReset(serverQueue);
+        return true;
+    }
+
+    serverQueue = xQueueCreate(queueLength, sizeof(HTTPCommand));
+    if (serverQueue == 0) {
+        ESP_LOGE(TAG, "xQueueCreate");
+        return false;
+    }
+    return true;
+}
+void PaxHttpServer::DestroyQueue(void)
+{
+    if (serverQueue == 0) return;
+
+    vQueueDelete(serverQueue);
+    serverQueue = 0;
 }
 
 esp_err_t PaxHttpServer::StartServer(ESP32SimpleOTA* sOTA)
@@ -76,12 +113,6 @@ esp_err_t PaxHttpServer::StartServer(ESP32SimpleOTA* sOTA)
     simpleOTA = sOTA;
     if (simpleOTA == nullptr) {
         return ESP_ERR_INVALID_ARG;
-    }
-
-    serverQueue = xQueueCreate(queueLength, sizeof(HTTPCommand));
-    if (serverQueue == 0) {
-        ESP_LOGE(TAG, "xQueueCreate");
-        return ESP_FAIL;
     }
 
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -127,11 +158,6 @@ void PaxHttpServer::StopServer(void)
 
     httpd_stop(serverHandle);
     serverHandle = nullptr;
-
-    if (serverQueue != 0) {
-        vQueueDelete(serverQueue);
-        serverQueue = 0;
-    }
 }
 
 esp_err_t PaxHttpServer::HandleRequest(httpd_req_t* req)

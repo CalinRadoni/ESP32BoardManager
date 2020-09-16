@@ -47,11 +47,16 @@ public:
     virtual ~PaxHttpServer();
 
     /**
-     * @brief The queue for timer events
-     *
-     * The queue is created by the StartServer function and destroyed by the StopServer function or on the destructor
+     * Currently only creates the serverQueue.
+     * If serverQueue exists, is destroyed and created again.
      */
-    QueueHandle_t serverQueue;
+    bool Initialize(void);
+
+    /**
+     * If serverQueue is not created tries to create one.
+     * Returns the serverQueue.
+     */
+    QueueHandle_t GetQueueHandle(void);
 
     esp_err_t StartServer(ESP32SimpleOTA*);
     void StopServer(void);
@@ -59,6 +64,19 @@ public:
     esp_err_t HandleRequest(httpd_req_t*);
 
 protected:
+    /**
+     * The queue for http server events.
+     * Is created by Initialize or GetQueueHandle functions.
+     * Is destroyed by destructor
+     */
+    QueueHandle_t serverQueue;
+
+    /**
+     * If queue is allready created, is emptied otherwise is created
+     */
+    bool CreateQueue(void);
+    void DestroyQueue(void);
+
     httpd_handle_t serverHandle;
     bool working;
 
