@@ -60,23 +60,27 @@ esp_err_t Board::Initialize(void)
 
     esp_err_t err = EarlyInit();
     if (err != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x EarlyInit", err);
         GoodBye();
         return err;
     }
 
     err = configuration.InitializeNVS();
     if (err != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x configuration.InitializeNVS", err);
         GoodBye();
         return err;
     }
 
     err = esp_event_loop_create_default();
     if (err != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x esp_event_loop_create_default", err);
         GoodBye();
         return err;
     }
 
     if (!events.Create()) {
+        ESP_LOGE(TAG, "0x%x events.Create", err);
         GoodBye();
         return err;
     }
@@ -86,19 +90,25 @@ esp_err_t Board::Initialize(void)
 
     err = CriticalInit();
     if (err != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x CriticalInit", err);
         GoodBye();
         return err;
     }
 
     err = configuration.ReadFromNVS();
     if (err != ESP_OK) {
-        GoodBye();
-        return err;
+        // the stored configuration is not valid ...
+        ESP_LOGE(TAG, "0x%x configuration.ReadFromNVS", err);
+        // ... build an empty one
+        configuration.InitData();
+        ESP_LOGW(TAG, "Configuration initialized to default values");
     }
 
     err = BoardInit();
-    if (err != ESP_OK)
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x BoardInit", err);
         return err;
+    }
 
     initialized = true;
     return ESP_OK;

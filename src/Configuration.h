@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "WiFiConfig.h"
 
 const uint8_t NameBufLen = 64;
-const uint8_t WiFiConfigCnt = 3;
+const uint8_t WiFiConfigCnt = 2;
 const uint8_t ipv4BufLen = 16;
 
 class Configuration
@@ -54,11 +54,14 @@ public:
      */
     char* CreateJSONConfigString(bool addWhitespaces);
 
+    bool SetFromJSONString(char*);
+
 protected:
     virtual bool CreateJSON_CustomData(cJSON*);
 
-    bool SetFromJSONString(char*);
-    virtual bool SetFromJSONString_CustomData();
+    virtual bool SetFromJSONString_CustomData(cJSON*);
+
+    bool SetStringFromJSON(char *str, uint8_t len, const char *id, cJSON *jstr);
 
 private:
 };

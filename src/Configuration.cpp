@@ -98,22 +98,10 @@ char* Configuration::CreateJSONConfigString(bool addWhitespaces)
     if (cJSON_AddNumberToObject(cfg, "version", version) == NULL) { cJSON_Delete(cfg); return str; }
     if (cJSON_AddStringToObject(cfg, "name", name) == NULL) { cJSON_Delete(cfg); return str; }
 
-    cJSON *APs = cJSON_AddArrayToObject(cfg, "APs");
-    if (APs == NULL) { cJSON_Delete(cfg); return str; }
-    for (uint8_t i = 0; i < WiFiConfigCnt; ++i) {
-        cJSON *ap = cJSON_CreateObject();
-        if (cJSON_AddStringToObject(ap, "SSID", (const char*)apCfg[i].SSID) == NULL) {
-            cJSON_Delete(ap);
-            cJSON_Delete(cfg);
-            return str;
-        }
-        if (cJSON_AddStringToObject(ap, "Pass", (const char*)apCfg[i].Pass) == NULL) {
-            cJSON_Delete(ap);
-            cJSON_Delete(cfg);
-            return str;
-        }
-        cJSON_AddItemToArray(APs, ap);
-    }
+    if (cJSON_AddStringToObject(cfg, "ap1s", (const char*)apCfg[0].SSID) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap1p", (const char*)apCfg[0].Pass) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap2s", (const char*)apCfg[1].SSID) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap2p", (const char*)apCfg[1].Pass) == NULL) { cJSON_Delete(cfg); return str; }
 
     if (cJSON_AddStringToObject(cfg, "ipAddr", ipAddr) == NULL) { cJSON_Delete(cfg); return str; }
     if (cJSON_AddStringToObject(cfg, "ipMask", ipMask) == NULL) { cJSON_Delete(cfg); return str; }
@@ -129,10 +117,28 @@ char* Configuration::CreateJSONConfigString(bool addWhitespaces)
     return str;
 }
 
-bool Configuration::SetFromJSONString_CustomData()
+bool Configuration::SetFromJSONString_CustomData(cJSON*)
 {
     return true;
 }
+
+bool Configuration::SetStringFromJSON(char *str, uint8_t len, const char *id, cJSON *jstr)
+{
+    cJSON *item = cJSON_GetObjectItemCaseSensitive(jstr, id);
+    if (item == NULL) return false;
+    if (!cJSON_IsString(item)) return false;
+
+    std::fill(str, str + len, static_cast<char>(0));
+    if (item->valuestring != NULL) {
+        strncpy(str, item->valuestring, len);
+        str[len - 1] = 0;
+    }
+
+    ESP_LOGI(TAG, "SetStringFromJSON %s = \"%s\"", id, str);
+
+    return true;
+}
+
 bool Configuration::SetFromJSONString(char *jsonStr)
 {
     InitData();
@@ -148,7 +154,7 @@ bool Configuration::SetFromJSONString(char *jsonStr)
 
     cJSON *item = NULL;
 
-    // read AND check the version
+    // write the version
     item = cJSON_GetObjectItemCaseSensitive(cfg, "version");
     if (item == NULL) {
         cJSON_Delete(cfg);
@@ -167,86 +173,22 @@ bool Configuration::SetFromJSONString(char *jsonStr)
         return false;
     }
 
-    // read the name
-    item = cJSON_GetObjectItemCaseSensitive(cfg, "name");
-    if (item == NULL) {
-        cJSON_Delete(cfg);
-        return false;
-    }
-    if (!cJSON_IsString(item)) {
-        cJSON_Delete(cfg);
-        return false;
-    }
-    if (item->valuestring != NULL) {
-        strncpy(name, item->valuestring, NameBufLen);
-        name[NameBufLen - 1] = 0;
-    }
+    bool res = true;
+    res = res & SetStringFromJSON(name, NameBufLen, "name", cfg);
+    res = res & SetStringFromJSON((char*)apCfg[0].SSID, SSIDBufLen, "ap1s", cfg);
+    res = res & SetStringFromJSON((char*)apCfg[0].Pass, PassBufLen, "ap1p", cfg);
+    res = res & SetStringFromJSON((char*)apCfg[1].SSID, SSIDBufLen, "ap2s", cfg);
+    res = res & SetStringFromJSON((char*)apCfg[1].Pass, PassBufLen, "ap2p", cfg);
+    res = res & SetStringFromJSON(ipAddr, ipv4BufLen, "ipAddr", cfg);
+    res = res & SetStringFromJSON(ipMask, ipv4BufLen, "ipMask", cfg);
+    res = res & SetStringFromJSON(ipGateway, ipv4BufLen, "ipGateway", cfg);
+    res = res & SetStringFromJSON(ipDNS, ipv4BufLen, "ipDNS", cfg);
 
-    // read AP configurations
-    item = cJSON_GetObjectItemCaseSensitive(cfg, "APs");
-    if (item == NULL) {
-        cJSON_Delete(cfg);
-        return false;
-    }
-    uint8_t idx = 0;
-    cJSON *elem;
-    cJSON_ArrayForEach(elem, item) {
-        if (idx < WiFiConfigCnt) {
-            cJSON *ssid = cJSON_GetObjectItemCaseSensitive(elem, "SSID");
-            if (ssid == NULL) { cJSON_Delete(cfg); return false; }
-            if (!cJSON_IsString(ssid)) { cJSON_Delete(cfg); return false; }
-            strncpy((char*)apCfg[idx].SSID, ssid->valuestring, SSIDBufLen);
-            apCfg[idx].SSID[SSIDBufLen - 1] = 0;
-
-            cJSON *pass = cJSON_GetObjectItemCaseSensitive(elem, "Pass");
-            if (pass == NULL) { cJSON_Delete(cfg); return false; }
-            if (!cJSON_IsString(pass)) { cJSON_Delete(cfg); return false; }
-            strncpy((char*)apCfg[idx].Pass, pass->valuestring, PassBufLen);
-            apCfg[idx].Pass[PassBufLen - 1] = 0;
-        }
-        idx++;
-    }
-
-    // read ipAddr
-    item = cJSON_GetObjectItemCaseSensitive(cfg, "ipAddr");
-    if (item == NULL) { cJSON_Delete(cfg); return false; }
-    if (!cJSON_IsString(item)) { cJSON_Delete(cfg); return false; }
-    if (item->valuestring != NULL) {
-        strncpy(ipAddr, item->valuestring, ipv4BufLen);
-        ipAddr[ipv4BufLen - 1] = 0;
-    }
-    // read ipMask
-    item = cJSON_GetObjectItemCaseSensitive(cfg, "ipMask");
-    if (item == NULL) { cJSON_Delete(cfg); return false; }
-    if (!cJSON_IsString(item)) { cJSON_Delete(cfg); return false; }
-    if (item->valuestring != NULL) {
-        strncpy(ipMask, item->valuestring, ipv4BufLen);
-        ipMask[ipv4BufLen - 1] = 0;
-    }
-    // read ipGateway
-    item = cJSON_GetObjectItemCaseSensitive(cfg, "ipGateway");
-    if (item == NULL) { cJSON_Delete(cfg); return false; }
-    if (!cJSON_IsString(item)) { cJSON_Delete(cfg); return false; }
-    if (item->valuestring != NULL) {
-        strncpy(ipGateway, item->valuestring, ipv4BufLen);
-        ipGateway[ipv4BufLen - 1] = 0;
-    }
-    // read ipDNS
-    item = cJSON_GetObjectItemCaseSensitive(cfg, "ipDNS");
-    if (item == NULL) { cJSON_Delete(cfg); return false; }
-    if (!cJSON_IsString(item)) { cJSON_Delete(cfg); return false; }
-    if (item->valuestring != NULL) {
-        strncpy(ipDNS, item->valuestring, ipv4BufLen);
-        ipDNS[ipv4BufLen - 1] = 0;
-    }
-
-    if (!SetFromJSONString_CustomData()) {
-        cJSON_Delete(cfg);
-        return false;
-    }
+    res = res & SetFromJSONString_CustomData(cfg);
 
     cJSON_Delete(cfg);
-    return true;
+
+    return res;
 }
 
 esp_err_t Configuration::ReadFromNVS(void)
@@ -260,7 +202,7 @@ esp_err_t Configuration::ReadFromNVS(void)
     {
         // The namespace does not exists yet
         // Write a default configuration, no erase needed
-        ESP_LOGW(TAG, "%d nvs_open. Creating the namespaceand default config.", err);
+        ESP_LOGW(TAG, "%d nvs_open. Creating the namespace and default config.", err);
         nvs_close(nvsHandle);
         return WriteToNVS(false);
     }
@@ -293,9 +235,11 @@ esp_err_t Configuration::ReadFromNVS(void)
 
     if (!SetFromJSONString(str)) {
         free(str);
+        ESP_LOGE(TAG, "SetFromJSONString failed");
         nvs_close(nvsHandle);
         return ESP_FAIL;
     }
+
     free(str);
 
     if (version != ConfigurationVersion){
@@ -304,6 +248,7 @@ esp_err_t Configuration::ReadFromNVS(void)
     }
 
     nvs_close(nvsHandle);
+
     return ESP_OK;
 }
 

@@ -112,6 +112,7 @@ esp_err_t PaxHttpServer::StartServer(ESP32SimpleOTA* sOTA)
 
     simpleOTA = sOTA;
     if (simpleOTA == nullptr) {
+        ESP_LOGE(TAG, "simpleOTA is nullptr");
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -342,8 +343,41 @@ esp_err_t PaxHttpServer::HandlePost_CmdJson(httpd_req_t* req)
 
 esp_err_t PaxHttpServer::HandlePost_ConfigJson(httpd_req_t* req)
 {
-    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "config.json");
-    return ESP_FAIL;
+    size_t totalLen = req->content_len;
+    size_t curLen = 0;
+    size_t recLen = 0;
+
+    if (totalLen >= workBufferSize) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "config content too long");
+        return ESP_FAIL;
+    }
+    while (curLen < totalLen) {
+        recLen = httpd_req_recv(req, &workBuffer[curLen], totalLen - curLen);
+        if (recLen <= 0) {
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "failed to receive data");
+            return ESP_FAIL;
+        }
+        curLen += recLen;
+    }
+    workBuffer[totalLen] = '\0';
+
+    bool res = configuration.SetFromJSONString(workBuffer);
+    if (!res) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "failed to process data");
+        return ESP_FAIL;
+    }
+
+    esp_err_t err = configuration.WriteToNVS(false);
+    if (err != ESP_OK) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "failed to process data");
+        return ESP_FAIL;
+    }
+
+    httpd_resp_set_type(req, "text/plain");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+    httpd_resp_set_hdr(req, "Pragma", "no-cache");
+    httpd_resp_sendstr(req, "Command processed");
+    return ESP_OK;
 }
 
 esp_err_t PaxHttpServer::HandleOTA(httpd_req_t* req)
