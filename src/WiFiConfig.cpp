@@ -43,8 +43,8 @@ void WiFiConfig::Initialize(void)
 
 bool WiFiConfig::CheckData(void)
 {
-    if (strlen((char*)SSID) < 1) return false;
-    if (strlen((char*)Pass) < 8)  return false;
+    if (std::strlen((const char*)SSID) < 1) return false;
+    if (std::strlen((const char*)Pass) < 8) return false;
 
     return true;
 }
@@ -53,37 +53,47 @@ void WiFiConfig::SetStationConfig(wifi_config_t* cfg)
 {
     if (cfg == nullptr) return;
 
-    memset(cfg, 0, sizeof(wifi_config_t));
-    memcpy(cfg->sta.ssid, SSID, 31 * sizeof(uint8_t));
-           cfg->sta.ssid[31] = 0;
-    memcpy(cfg->sta.password, Pass, 63 * sizeof(uint8_t));
-           cfg->sta.password[63] = 0;
+    std::memset(cfg, 0, sizeof(wifi_config_t));
+
+    std::size_t copyLen = (sizeof cfg->sta.ssid) - 1;
+    std::memcpy(cfg->sta.ssid, SSID, copyLen);
+    cfg->sta.ssid[copyLen] = 0;
+
+    copyLen = (sizeof cfg->sta.password) - 1;
+    std::memcpy(cfg->sta.password, Pass, copyLen);
+    cfg->sta.password[copyLen] = 0;
 }
 
 void WiFiConfig::SetAPConfig(wifi_config_t* cfg)
 {
     if (cfg == nullptr) return;
 
-    memset(cfg, 0, sizeof(wifi_config_t));
-    memcpy(cfg->ap.ssid, SSID, 31 * sizeof(uint8_t));
-           cfg->ap.ssid[31] = 0;
-           cfg->ap.ssid_len = 0;
-    memcpy(cfg->ap.password, Pass, 63 * sizeof(uint8_t));
-           cfg->ap.password[63] = 0;
+    std::memset(cfg, 0, sizeof(wifi_config_t));
+
+    std::size_t copyLen = (sizeof cfg->ap.ssid) - 1;
+    std::memcpy(cfg->ap.ssid, SSID, copyLen);
+    cfg->ap.ssid[copyLen] = 0;
+    cfg->ap.ssid_len = 0;
+
+    copyLen = (sizeof cfg->ap.password) - 1;
+    std::memcpy(cfg->ap.password, Pass, copyLen);
+    cfg->ap.password[copyLen] = 0;
 }
 
 void WiFiConfig::SetFromStrings(const char* strSSID, const char* strPASS)
 {
     Initialize();
 
+    std::size_t len = SSIDBufLen - 1;
     if (strSSID != nullptr) {
-        strncpy((char*)SSID, strSSID, 31);
-        SSID[31] = 0;
+        std::strncpy((char*)SSID, strSSID, len);
+        SSID[len] = 0;
     }
 
+    len = PassBufLen - 1;
     if (strPASS != nullptr) {
-        strncpy((char*)Pass, strPASS, 63);
-        Pass[63] = 0;
+        std::strncpy((char*)Pass, strPASS, len);
+        Pass[len] = 0;
     }
 }
 

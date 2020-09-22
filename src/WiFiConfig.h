@@ -23,6 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "freertos/FreeRTOS.h"
 #include "esp_wifi.h"
 
+// #include <string>
+// TODO convert datas to std::string
+
 const uint8_t SSIDBufLen = 33;
 const uint8_t PassBufLen = 65;
 
@@ -32,11 +35,18 @@ public:
     WiFiConfig(void);
     ~WiFiConfig();
 
-    uint8_t SSID[SSIDBufLen]; // minimum length for a valid SSID is 1
-    uint8_t Pass[PassBufLen]; // minimum length for a valid WPA2 password is 8
+    uint8_t SSID[SSIDBufLen];
+    uint8_t Pass[PassBufLen];
 
     void Initialize(void);
 
+    /**
+     * @brief Check validity of data
+     *
+     * For now it only checks minimum lengths
+     * - minimum length for a valid SSID is 1
+     * - minimum length for a valid WPA2 password is 8
+     */
     bool CheckData(void);
 
     void SetStationConfig(wifi_config_t*);
