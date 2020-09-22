@@ -66,6 +66,4 @@ protected:
 private:
 };
 
-extern Configuration configuration;
-
 #endif

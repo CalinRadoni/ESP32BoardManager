@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "esp_http_server.h"
 
 #include "ESP32SimpleOTA.h"
+#include "Configuration.h"
 
 struct HTTPCommand
 {
@@ -58,7 +59,7 @@ public:
      */
     QueueHandle_t GetQueueHandle(void);
 
-    esp_err_t StartServer(ESP32SimpleOTA*);
+    esp_err_t StartServer(ESP32SimpleOTA*, Configuration*);
     void StopServer(void);
 
     esp_err_t HandleRequest(httpd_req_t*);
@@ -94,6 +95,8 @@ protected:
 
     ESP32SimpleOTA* simpleOTA;
     esp_err_t HandleOTA(httpd_req_t*);
+
+    Configuration* configuration;
 };
 
 #endif

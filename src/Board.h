@@ -106,11 +106,14 @@ public:
     esp_err_t CleanWiFi(void);
 
     /**
-     * @brief Connect to the saved AP
+     * @brief Connect to one of the saved AP
      *
      * Tries to connect and wait for connection to complete or timeout.
+     *
+     * @returns ESP_ERR_INVALID_ARG if configuration is nullptr
+     * @returns ESP_ERR_INVALID_ARG if AP index is >= WiFiConfigCnt
      */
-    esp_err_t Connect(void);
+    esp_err_t Connect(uint8_t);
 
     /**
      * @brief Disconnect
@@ -127,6 +130,7 @@ protected:
 
     WiFiManager theWiFiManager;
     ESP32SimpleOTA simpleOTA;
+    Configuration *configuration;
 
     bool initialized;
 

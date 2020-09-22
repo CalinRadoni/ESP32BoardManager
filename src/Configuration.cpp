@@ -32,8 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // -----------------------------------------------------------------------------
 
-Configuration configuration;
-
 static const char* TAG = "Configuration";
 
 const uint32_t ConfigurationVersion = 2;

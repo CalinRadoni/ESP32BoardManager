@@ -61,6 +61,7 @@ PaxHttpServer::PaxHttpServer(void)
     serverHandle = nullptr;
     working = false;
     simpleOTA = nullptr;
+    configuration = nullptr;
 }
 
 PaxHttpServer::~PaxHttpServer()
@@ -105,7 +106,7 @@ void PaxHttpServer::DestroyQueue(void)
     serverQueue = 0;
 }
 
-esp_err_t PaxHttpServer::StartServer(ESP32SimpleOTA* sOTA)
+esp_err_t PaxHttpServer::StartServer(ESP32SimpleOTA* sOTA, Configuration* boardConfiguration)
 {
     if (serverHandle != nullptr)
         StopServer();
@@ -113,6 +114,12 @@ esp_err_t PaxHttpServer::StartServer(ESP32SimpleOTA* sOTA)
     simpleOTA = sOTA;
     if (simpleOTA == nullptr) {
         ESP_LOGE(TAG, "simpleOTA is nullptr");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    configuration = boardConfiguration;
+    if (configuration == nullptr) {
+        ESP_LOGE(TAG, "configuration is nullptr");
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -233,7 +240,12 @@ esp_err_t PaxHttpServer::HandleGet_StatusJson(httpd_req_t* req)
 
 esp_err_t PaxHttpServer::HandleGet_ConfigJson(httpd_req_t* req)
 {
-    char *str = configuration.CreateJSONConfigString(true);
+    if (configuration == nullptr) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "configuration is null");
+        return ESP_FAIL;
+    }
+
+    char *str = configuration->CreateJSONConfigString(true);
     if (str == nullptr) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "config.json");
         return ESP_FAIL;
@@ -361,13 +373,18 @@ esp_err_t PaxHttpServer::HandlePost_ConfigJson(httpd_req_t* req)
     }
     workBuffer[totalLen] = '\0';
 
-    bool res = configuration.SetFromJSONString(workBuffer);
+    if (configuration == nullptr) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "configuration is null");
+        return ESP_FAIL;
+    }
+
+    bool res = configuration->SetFromJSONString(workBuffer);
     if (!res) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "failed to process data");
         return ESP_FAIL;
     }
 
-    esp_err_t err = configuration.WriteToNVS(false);
+    esp_err_t err = configuration->WriteToNVS(false);
     if (err != ESP_OK) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "failed to process data");
         return ESP_FAIL;

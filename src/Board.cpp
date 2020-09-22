@@ -28,7 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "esp_sleep.h"
 
 #include "Board.h"
-#include "Configuration.h"
 #include "pax_http_server.h"
 
 // -----------------------------------------------------------------------------
@@ -46,6 +45,7 @@ Board::Board(void)
 {
     initialized = false;
     memset(MAC, 0, 6);
+    configuration = nullptr;
 }
 
 Board::~Board(void)
@@ -65,9 +65,14 @@ esp_err_t Board::Initialize(void)
         return err;
     }
 
-    err = configuration.InitializeNVS();
+    if (configuration == nullptr) {
+        ESP_LOGE(TAG, "configuration is null");
+        GoodBye();
+        return ESP_FAIL;
+    }
+    err = configuration->InitializeNVS();
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "0x%x configuration.InitializeNVS", err);
+        ESP_LOGE(TAG, "0x%x configuration->InitializeNVS", err);
         GoodBye();
         return err;
     }
@@ -95,12 +100,12 @@ esp_err_t Board::Initialize(void)
         return err;
     }
 
-    err = configuration.ReadFromNVS();
+    err = configuration->ReadFromNVS();
     if (err != ESP_OK) {
         // the stored configuration is not valid ...
-        ESP_LOGE(TAG, "0x%x configuration.ReadFromNVS", err);
+        ESP_LOGE(TAG, "0x%x configuration->ReadFromNVS", err);
         // ... build an empty one
-        configuration.InitData();
+        configuration->InitData();
         ESP_LOGW(TAG, "Configuration initialized to default values");
     }
 
@@ -313,14 +318,18 @@ esp_err_t Board::CleanWiFi(void)
     return theWiFiManager.Clean();
 }
 
-esp_err_t Board::Connect(void)
+esp_err_t Board::Connect(uint8_t apIdx)
 {
-    WiFiConfig staCfg;
-
     theWiFiManager.Stop(true);
 
-    staCfg.SetFromStrings((const char*)configuration.apCfg[0].SSID, (const char*)configuration.apCfg[0].Pass);
-    esp_err_t err = theWiFiManager.Start(WiFiManagerMode::station, &staCfg, nullptr);
+    if (configuration == nullptr) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (apIdx >= WiFiConfigCnt) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    esp_err_t err = theWiFiManager.Start(WiFiManagerMode::station, &(configuration->apCfg[apIdx]), nullptr);
     if(err != ESP_OK) {
         ESP_LOGE(TAG, "Connect error");
     }
