@@ -261,7 +261,7 @@ esp_err_t Board::StartConfigurationAP(void)
 esp_err_t Board::StartAP(void)
 {
     const char* apName = "DevX";
-    WiFiConfig apCfg;
+    WiFiConfig ap;
     esp_err_t err;
 
     err = theWiFiManager.Initialize();
@@ -272,8 +272,8 @@ esp_err_t Board::StartAP(void)
 
     // connect as AP
     GetMAC();
-    apCfg.SetFromNameAndMAC(apName, MAC);
-    err = theWiFiManager.Start(WiFiManagerMode::ap, nullptr, &apCfg);
+    ap.SetFromNameAndMAC(apName, MAC);
+    err = theWiFiManager.Start(WiFiManagerMode::ap, nullptr, &ap);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x Start AP", err);
         return err;
@@ -329,7 +329,7 @@ esp_err_t Board::Connect(uint8_t apIdx)
         return ESP_ERR_INVALID_ARG;
     }
 
-    esp_err_t err = theWiFiManager.Start(WiFiManagerMode::station, &(configuration->apCfg[apIdx]), nullptr);
+    esp_err_t err = theWiFiManager.Start(WiFiManagerMode::station, &(configuration->ap[apIdx]), nullptr);
     if(err != ESP_OK) {
         ESP_LOGE(TAG, "Connect error");
     }

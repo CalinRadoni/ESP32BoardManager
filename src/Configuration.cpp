@@ -55,7 +55,7 @@ void Configuration::InitData(void)
     name.clear();
 
     for (uint8_t i = 0; i < WiFiConfigCnt; ++i)
-        apCfg->Initialize();
+        ap->Initialize();
 
     std::fill(ipAddr, ipAddr + ipv4BufLen, static_cast<char>(0));
     std::fill(ipMask, ipMask + ipv4BufLen, static_cast<char>(0));
@@ -96,10 +96,10 @@ char* Configuration::CreateJSONConfigString(bool addWhitespaces)
     if (cJSON_AddNumberToObject(cfg, "version", version) == NULL) { cJSON_Delete(cfg); return str; }
     if (cJSON_AddStringToObject(cfg, "name", name.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
 
-    if (cJSON_AddStringToObject(cfg, "ap1s", apCfg[0].ssid.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
-    if (cJSON_AddStringToObject(cfg, "ap1p", apCfg[0].pass.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
-    if (cJSON_AddStringToObject(cfg, "ap2s", apCfg[1].ssid.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
-    if (cJSON_AddStringToObject(cfg, "ap2p", apCfg[1].pass.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap1s", ap[0].ssid.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap1p", ap[0].pass.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap2s", ap[1].ssid.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap2p", ap[1].pass.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
 
     if (cJSON_AddStringToObject(cfg, "ipAddr", ipAddr) == NULL) { cJSON_Delete(cfg); return str; }
     if (cJSON_AddStringToObject(cfg, "ipMask", ipMask) == NULL) { cJSON_Delete(cfg); return str; }
@@ -183,25 +183,25 @@ bool Configuration::SetFromJSONString(char *jsonStr)
         return false;
     }
 
-    char* jrstr = nullptr;
+    char* value = nullptr;
 
-    jrstr = GetStringFromJSON("name", cfg);
-    if (jrstr == nullptr) name.clear();
-    else name = jrstr;
+    value = GetStringFromJSON("name", cfg);
+    if (value == nullptr) name.clear();
+    else name = value;
 
-    jrstr = GetStringFromJSON("ap1s", cfg);
-    if (jrstr == nullptr) apCfg[0].ssid.clear();
-    else apCfg[0].ssid = jrstr;
-    jrstr = GetStringFromJSON("ap1p", cfg);
-    if (jrstr == nullptr) apCfg[0].pass.clear();
-    else apCfg[0].pass = jrstr;
+    value = GetStringFromJSON("ap1s", cfg);
+    if (value == nullptr) ap[0].ssid.clear();
+    else ap[0].ssid = value;
+    value = GetStringFromJSON("ap1p", cfg);
+    if (value == nullptr) ap[0].pass.clear();
+    else ap[0].pass = value;
 
-    jrstr = GetStringFromJSON("ap2s", cfg);
-    if (jrstr == nullptr) apCfg[1].ssid.clear();
-    else apCfg[1].ssid = jrstr;
-    jrstr = GetStringFromJSON("ap2p", cfg);
-    if (jrstr == nullptr) apCfg[1].pass.clear();
-    else apCfg[1].pass = jrstr;
+    value = GetStringFromJSON("ap2s", cfg);
+    if (value == nullptr) ap[1].ssid.clear();
+    else ap[1].ssid = value;
+    value = GetStringFromJSON("ap2p", cfg);
+    if (value == nullptr) ap[1].pass.clear();
+    else ap[1].pass = value;
 
     bool res = true;
     res = res & SetStringFromJSON(ipAddr, ipv4BufLen, "ipAddr", cfg);

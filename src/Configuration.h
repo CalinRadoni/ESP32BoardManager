@@ -36,7 +36,7 @@ public:
 
     uint32_t version;
     std::string name;
-    WiFiConfig apCfg[WiFiConfigCnt];
+    WiFiConfig ap[WiFiConfigCnt];
     char ipAddr[ipv4BufLen];
     char ipMask[ipv4BufLen];
     char ipGateway[ipv4BufLen];
