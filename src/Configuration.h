@@ -35,7 +35,7 @@ public:
     virtual ~Configuration();
 
     uint32_t version;
-    char name[NameBufLen];
+    std::string name;
     WiFiConfig apCfg[WiFiConfigCnt];
     char ipAddr[ipv4BufLen];
     char ipMask[ipv4BufLen];
@@ -61,6 +61,7 @@ protected:
 
     virtual bool SetFromJSONString_CustomData(cJSON*);
 
+    char* GetStringFromJSON(const char *id, cJSON *jstr);
     bool SetStringFromJSON(char *str, uint8_t len, const char *id, cJSON *jstr);
 
 private:

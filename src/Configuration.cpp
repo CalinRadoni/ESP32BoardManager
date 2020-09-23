@@ -52,7 +52,7 @@ Configuration::~Configuration()
 void Configuration::InitData(void)
 {
     version = ConfigurationVersion;
-    std::fill(name, name + NameBufLen, static_cast<char>(0));
+    name.clear();
 
     for (uint8_t i = 0; i < WiFiConfigCnt; ++i)
         apCfg->Initialize();
@@ -94,12 +94,12 @@ char* Configuration::CreateJSONConfigString(bool addWhitespaces)
     cJSON *cfg = cJSON_CreateObject();
 
     if (cJSON_AddNumberToObject(cfg, "version", version) == NULL) { cJSON_Delete(cfg); return str; }
-    if (cJSON_AddStringToObject(cfg, "name", name) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "name", name.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
 
-    if (cJSON_AddStringToObject(cfg, "ap1s", (const char*)apCfg[0].SSID) == NULL) { cJSON_Delete(cfg); return str; }
-    if (cJSON_AddStringToObject(cfg, "ap1p", (const char*)apCfg[0].Pass) == NULL) { cJSON_Delete(cfg); return str; }
-    if (cJSON_AddStringToObject(cfg, "ap2s", (const char*)apCfg[1].SSID) == NULL) { cJSON_Delete(cfg); return str; }
-    if (cJSON_AddStringToObject(cfg, "ap2p", (const char*)apCfg[1].Pass) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap1s", apCfg[0].ssid.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap1p", apCfg[0].pass.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap2s", apCfg[1].ssid.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "ap2p", apCfg[1].pass.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
 
     if (cJSON_AddStringToObject(cfg, "ipAddr", ipAddr) == NULL) { cJSON_Delete(cfg); return str; }
     if (cJSON_AddStringToObject(cfg, "ipMask", ipMask) == NULL) { cJSON_Delete(cfg); return str; }
@@ -118,6 +118,18 @@ char* Configuration::CreateJSONConfigString(bool addWhitespaces)
 bool Configuration::SetFromJSONString_CustomData(cJSON*)
 {
     return true;
+}
+
+char* Configuration::GetStringFromJSON(const char *id, cJSON *jstr)
+{
+    cJSON *item = cJSON_GetObjectItemCaseSensitive(jstr, id);
+    if (item == NULL) return nullptr;
+    if (!cJSON_IsString(item)) return nullptr;
+    if (item->valuestring == NULL) return nullptr;
+
+    ESP_LOGI(TAG, "GetStringFromJSON %s = \"%s\"", id, item->valuestring);
+
+    return item->valuestring;
 }
 
 bool Configuration::SetStringFromJSON(char *str, uint8_t len, const char *id, cJSON *jstr)
@@ -171,12 +183,27 @@ bool Configuration::SetFromJSONString(char *jsonStr)
         return false;
     }
 
+    char* jrstr = nullptr;
+
+    jrstr = GetStringFromJSON("name", cfg);
+    if (jrstr == nullptr) name.clear();
+    else name = jrstr;
+
+    jrstr = GetStringFromJSON("ap1s", cfg);
+    if (jrstr == nullptr) apCfg[0].ssid.clear();
+    else apCfg[0].ssid = jrstr;
+    jrstr = GetStringFromJSON("ap1p", cfg);
+    if (jrstr == nullptr) apCfg[0].pass.clear();
+    else apCfg[0].pass = jrstr;
+
+    jrstr = GetStringFromJSON("ap2s", cfg);
+    if (jrstr == nullptr) apCfg[1].ssid.clear();
+    else apCfg[1].ssid = jrstr;
+    jrstr = GetStringFromJSON("ap2p", cfg);
+    if (jrstr == nullptr) apCfg[1].pass.clear();
+    else apCfg[1].pass = jrstr;
+
     bool res = true;
-    res = res & SetStringFromJSON(name, NameBufLen, "name", cfg);
-    res = res & SetStringFromJSON((char*)apCfg[0].SSID, SSIDBufLen, "ap1s", cfg);
-    res = res & SetStringFromJSON((char*)apCfg[0].Pass, PassBufLen, "ap1p", cfg);
-    res = res & SetStringFromJSON((char*)apCfg[1].SSID, SSIDBufLen, "ap2s", cfg);
-    res = res & SetStringFromJSON((char*)apCfg[1].Pass, PassBufLen, "ap2p", cfg);
     res = res & SetStringFromJSON(ipAddr, ipv4BufLen, "ipAddr", cfg);
     res = res & SetStringFromJSON(ipMask, ipv4BufLen, "ipMask", cfg);
     res = res & SetStringFromJSON(ipGateway, ipv4BufLen, "ipGateway", cfg);

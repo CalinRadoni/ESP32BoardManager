@@ -23,11 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "freertos/FreeRTOS.h"
 #include "esp_wifi.h"
 
-// #include <string>
-// TODO convert datas to std::string
-
-const uint8_t SSIDBufLen = 33;
-const uint8_t PassBufLen = 65;
+#include <string>
 
 class WiFiConfig
 {
@@ -35,17 +31,17 @@ public:
     WiFiConfig(void);
     ~WiFiConfig();
 
-    uint8_t SSID[SSIDBufLen];
-    uint8_t Pass[PassBufLen];
+    std::string ssid;
+    std::string pass;
 
     void Initialize(void);
 
     /**
      * @brief Check validity of data
      *
-     * For now it only checks minimum lengths
-     * - minimum length for a valid SSID is 1
-     * - minimum length for a valid WPA2 password is 8
+     * For now it only checks:
+     * - 1 <= {@code ssid}.length() <= 31
+     * - 8 <= {@code pass}.length() <= 63
      */
     bool CheckData(void);
 
@@ -57,7 +53,10 @@ public:
     /**
      * @brief Builds the name and password for configuration AP
      *
-     * Creates the SSID and PASS as "name-hex(MAC[3]MAC[4]MAC[5])"
+     * Sets {@code ssid} to "name-hex(MAC[3]MAC[4]MAC[5])"
+     * If {@code name} or {@code MAC} are nullptr, {@code ssid} will be "pax-device"
+     *
+     * Sets {@code pass} to "paxxword"
      */
     void SetFromNameAndMAC(const char* name, const uint8_t* MAC);
 

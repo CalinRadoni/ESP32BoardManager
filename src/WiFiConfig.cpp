@@ -22,8 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "esp_err.h"
 #include "esp_wifi.h"
 
+#include <string>
 #include <cstring>
-#include <algorithm>
+#include <vector>
 
 WiFiConfig::WiFiConfig(void)
 {
@@ -37,14 +38,16 @@ WiFiConfig::~WiFiConfig(void)
 
 void WiFiConfig::Initialize(void)
 {
-    std::fill(SSID, SSID + SSIDBufLen, static_cast<uint8_t>(0));
-    std::fill(Pass, Pass + PassBufLen, static_cast<uint8_t>(0));
+    ssid.clear();
+    pass.clear();
 }
 
 bool WiFiConfig::CheckData(void)
 {
-    if (std::strlen((const char*)SSID) < 1) return false;
-    if (std::strlen((const char*)Pass) < 8) return false;
+    if (ssid.length() < 1) return false;
+    if (ssid.length() > 31) return false;
+    if (pass.length() < 1) return false;
+    if (pass.length() > 63) return false;
 
     return true;
 }
@@ -55,12 +58,18 @@ void WiFiConfig::SetStationConfig(wifi_config_t* cfg)
 
     std::memset(cfg, 0, sizeof(wifi_config_t));
 
-    std::size_t copyLen = (sizeof cfg->sta.ssid) - 1;
-    std::memcpy(cfg->sta.ssid, SSID, copyLen);
+    std::size_t dstLen = (sizeof cfg->sta.ssid) - 1;
+    std::size_t copyLen = ssid.length();
+    if (copyLen > dstLen)
+        copyLen = dstLen;
+    std::memcpy(cfg->sta.ssid, ssid.c_str(), copyLen);
     cfg->sta.ssid[copyLen] = 0;
 
-    copyLen = (sizeof cfg->sta.password) - 1;
-    std::memcpy(cfg->sta.password, Pass, copyLen);
+    dstLen = (sizeof cfg->sta.password) - 1;
+    copyLen = pass.length();
+    if (copyLen > dstLen)
+        copyLen = dstLen;
+    std::memcpy(cfg->sta.password, pass.c_str(), copyLen);
     cfg->sta.password[copyLen] = 0;
 }
 
@@ -70,13 +79,20 @@ void WiFiConfig::SetAPConfig(wifi_config_t* cfg)
 
     std::memset(cfg, 0, sizeof(wifi_config_t));
 
-    std::size_t copyLen = (sizeof cfg->ap.ssid) - 1;
-    std::memcpy(cfg->ap.ssid, SSID, copyLen);
+    std::size_t dstLen = (sizeof cfg->ap.ssid) - 1;
+    std::size_t copyLen = ssid.length();
+    if (copyLen > dstLen)
+        copyLen = dstLen;
+    std::memcpy(cfg->ap.ssid, ssid.c_str(), copyLen);
     cfg->ap.ssid[copyLen] = 0;
+
     cfg->ap.ssid_len = 0;
 
-    copyLen = (sizeof cfg->ap.password) - 1;
-    std::memcpy(cfg->ap.password, Pass, copyLen);
+    dstLen = (sizeof cfg->ap.password) - 1;
+    copyLen = pass.length();
+    if (copyLen > dstLen)
+        copyLen = dstLen;
+    std::memcpy(cfg->ap.password, pass.c_str(), copyLen);
     cfg->ap.password[copyLen] = 0;
 }
 
@@ -84,25 +100,29 @@ void WiFiConfig::SetFromStrings(const char* strSSID, const char* strPASS)
 {
     Initialize();
 
-    std::size_t len = SSIDBufLen - 1;
-    if (strSSID != nullptr) {
-        std::strncpy((char*)SSID, strSSID, len);
-        SSID[len] = 0;
-    }
+    ssid.clear();
+    if (strSSID != nullptr)
+        ssid = strSSID;
 
-    len = PassBufLen - 1;
-    if (strPASS != nullptr) {
-        std::strncpy((char*)Pass, strPASS, len);
-        Pass[len] = 0;
-    }
+    pass.clear();
+    if (strPASS != nullptr)
+        pass = strPASS;
 }
 
 void WiFiConfig::SetFromNameAndMAC(const char* name, const uint8_t* MAC)
 {
     Initialize();
 
+    ssid = "pax-device";
+    pass = "paxxword";
+
     if ((name == nullptr) || (MAC == nullptr)) return;
 
-    snprintf((char*)SSID, 32, "%s-%02X%02X%02X", name, MAC[3], MAC[4], MAC[5]);
-    memcpy(Pass, SSID, 32);
+    std::string formatString = "%s-%02X%02X%02X";
+    int size = std::snprintf(nullptr, 0, formatString.c_str(), name, MAC[3], MAC[4], MAC[5]);
+    if (size <= 0) return;
+
+    std::vector<char> buffer(size + 1);
+    std::snprintf(buffer.data(), buffer.size(), formatString.c_str(), name, MAC[3], MAC[4], MAC[5]);
+    ssid = buffer.data();
 }
