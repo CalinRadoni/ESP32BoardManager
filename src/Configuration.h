@@ -61,7 +61,8 @@ protected:
 
     virtual bool SetFromJSONString_CustomData(cJSON*);
 
-    char* GetStringFromJSON(const char *id, cJSON *jstr);
+    bool SetIntFromJSON(int&, const char *id, cJSON *jstr);
+    bool SetStringFromJSON(std::string& str, const char *id, cJSON *jstr);
     bool SetStringFromJSON(char *str, uint8_t len, const char *id, cJSON *jstr);
 
 private:

@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "esp_log.h"
 #include "esp_system.h"
 
+#include <vector>
 #include <cstring>
 #include <algorithm>
 
@@ -120,14 +121,29 @@ bool Configuration::SetFromJSONString_CustomData(cJSON*)
     return true;
 }
 
-char* Configuration::GetStringFromJSON(const char *id, cJSON *jstr)
+bool Configuration::SetIntFromJSON(int& value, const char *id, cJSON *jstr)
 {
     cJSON *item = cJSON_GetObjectItemCaseSensitive(jstr, id);
-    if (item == NULL) return nullptr;
-    if (!cJSON_IsString(item)) return nullptr;
-    if (item->valuestring == NULL) return nullptr;
+    if (item == NULL) return false;
+    if (!cJSON_IsNumber(item)) return false;
 
-    return item->valuestring;
+    value = item->valueint;
+    return true;
+}
+
+bool Configuration::SetStringFromJSON(std::string& str, const char *id, cJSON *jstr)
+{
+    cJSON *item = cJSON_GetObjectItemCaseSensitive(jstr, id);
+    if (item == NULL) return false;
+    if (!cJSON_IsString(item)) return false;
+
+    if (item->valuestring == NULL){
+        str.clear();
+    }
+    else {
+        str = item->valuestring;
+    }
+    return true;
 }
 
 bool Configuration::SetStringFromJSON(char *str, uint8_t len, const char *id, cJSON *jstr)
@@ -147,8 +163,6 @@ bool Configuration::SetStringFromJSON(char *str, uint8_t len, const char *id, cJ
 
 bool Configuration::SetFromJSONString(char *jsonStr)
 {
-    InitData();
-
     cJSON *cfg = cJSON_Parse(jsonStr);
     if (cfg == NULL) {
         const char *errStr = cJSON_GetErrorPtr();
@@ -158,54 +172,38 @@ bool Configuration::SetFromJSONString(char *jsonStr)
         return false;
     }
 
-    cJSON *item = NULL;
-
-    // write the version
-    item = cJSON_GetObjectItemCaseSensitive(cfg, "version");
-    if (item == NULL) {
+    // we have a valid JSON string, check if the version is OK
+    int value = 0;
+    bool res = SetIntFromJSON(value, "version", cfg);
+    if (!res){
         cJSON_Delete(cfg);
         return false;
     }
-    if (cJSON_IsNumber(item)) {
-        version = item->valueint;
-        if (version != ConfigurationVersion) {
-            version = ConfigurationVersion;
-            cJSON_Delete(cfg);
-            return false;
-        }
-    }
-    else {
+    version = value;
+    if (version != ConfigurationVersion) {
+        // if the version is not the one I know exit with error
         cJSON_Delete(cfg);
         return false;
     }
 
-    char* value = nullptr;
+    // set everything to default
+    InitData();
 
-    value = GetStringFromJSON("name", cfg);
-    if (value == nullptr) name.clear();
-    else name = value;
+    // these are NOT critical configuration values ...
+    // ... so the exit code is not checked, any of these may be missing
+    // the default values are set by the previous call to InitData
+    SetStringFromJSON(name, "name", cfg);
+    SetStringFromJSON(ap[0].ssid, "ap1s", cfg);
+    SetStringFromJSON(ap[0].pass, "ap1p", cfg);
+    SetStringFromJSON(ap[1].ssid, "ap2s", cfg);
+    SetStringFromJSON(ap[1].pass, "ap2p", cfg);
 
-    value = GetStringFromJSON("ap1s", cfg);
-    if (value == nullptr) ap[0].ssid.clear();
-    else ap[0].ssid = value;
-    value = GetStringFromJSON("ap1p", cfg);
-    if (value == nullptr) ap[0].pass.clear();
-    else ap[0].pass = value;
+    SetStringFromJSON(ipAddr, ipv4BufLen, "ipAddr", cfg);
+    SetStringFromJSON(ipMask, ipv4BufLen, "ipMask", cfg);
+    SetStringFromJSON(ipGateway, ipv4BufLen, "ipGateway", cfg);
+    SetStringFromJSON(ipDNS, ipv4BufLen, "ipDNS", cfg);
 
-    value = GetStringFromJSON("ap2s", cfg);
-    if (value == nullptr) ap[1].ssid.clear();
-    else ap[1].ssid = value;
-    value = GetStringFromJSON("ap2p", cfg);
-    if (value == nullptr) ap[1].pass.clear();
-    else ap[1].pass = value;
-
-    bool res = true;
-    res = res & SetStringFromJSON(ipAddr, ipv4BufLen, "ipAddr", cfg);
-    res = res & SetStringFromJSON(ipMask, ipv4BufLen, "ipMask", cfg);
-    res = res & SetStringFromJSON(ipGateway, ipv4BufLen, "ipGateway", cfg);
-    res = res & SetStringFromJSON(ipDNS, ipv4BufLen, "ipDNS", cfg);
-
-    res = res & SetFromJSONString_CustomData(cfg);
+    SetFromJSONString_CustomData(cfg);
 
     cJSON_Delete(cfg);
 
@@ -241,29 +239,26 @@ esp_err_t Configuration::ReadFromNVS(void)
         return err;
     }
 
-    // TODO replace this code with vector
-    char *str = (char*)malloc(strBufLen);
-    if (str == NULL) {
-        ESP_LOGE(TAG, "malloc str");
+    char *str = new (std::nothrow) char[strBufLen];
+    if (str == nullptr) {
+        ESP_LOGE(TAG, "Failed to allocate char buffer");
         nvs_close(nvsHandle);
         return err;
     }
     err = nvs_get_str(nvsHandle, "json", str, &strBufLen);
     if (err != ESP_OK) {
-        free(str);
+        delete[] str;
         ESP_LOGE(TAG, "0x%x nvs_get_str", err);
         nvs_close(nvsHandle);
         return err;
     }
-
     if (!SetFromJSONString(str)) {
-        free(str);
+        delete[] str;
         ESP_LOGE(TAG, "SetFromJSONString failed");
         nvs_close(nvsHandle);
         return ESP_FAIL;
     }
-
-    free(str);
+    delete[] str;
 
     if (version != ConfigurationVersion){
         nvs_close(nvsHandle);
