@@ -115,6 +115,12 @@ esp_err_t Board::Initialize(void)
         return err;
     }
 
+    err = PostInit();
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x PostInit", err);
+        return err;
+    }
+
     initialized = true;
     return ESP_OK;
 }
@@ -130,162 +136,6 @@ void Board::GoodBye(void)
 {
     uint64_t sleepTimeUS = usInOneHour;
     esp_deep_sleep(sleepTimeUS);
-}
-
-esp_err_t Board::StartConfigurationAP(void)
-{
-    const char* apName = "DevX";
-    WiFiConfig apCfg, staCfg;
-    esp_err_t err;
-    EventBits_t bits;
-
-    err = theWiFiManager.Initialize();
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "0x%x theWiFiManager.Initialize", err);
-        return err;
-    }
-
-    // perform an AP scan
-    err = theWiFiManager.Start(WiFiManagerMode::scan, nullptr, nullptr);
-    if (err == ESP_OK) {
-        bits = events.WaitForAllBits(xBitScanDone, msToWaitForScan);
-        if ((bits & xBitScanDone) == 0) {
-            ESP_LOGE(TAG, "Scan timeout");
-            return ESP_ERR_TIMEOUT;
-        }
-    }
-    theWiFiManager.Stop(true);
-
-    // connect as apsta
-    GetMAC();
-    apCfg.SetFromNameAndMAC(apName, MAC);
-    staCfg.SetFromNameAndMAC(apName, MAC);
-    err = theWiFiManager.Start(WiFiManagerMode::apsta, &staCfg, &apCfg);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "0x%x Start APSTA", err);
-        return err;
-    }
-
-/*
-    err = httpServer->StartServer(&simpleOTA);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "%d StartServer", err);
-        return err;
-    }
-
-    bool done = false;
-
-    while (!done) {
-        // wait for credentials
-        bits = events.WaitForAllBits(xBitCredentialsReceived, portMAX_DELAY);
-
-        if (theHTTPConfigServer.checkThem) {
-            theHTTPConfigServer.checkThem = false;
-
-            theHTTPConfigServer.StopServer();
-            theWiFiManager.Stop(true);
-
-            staCfg.SetFromStrings(theHTTPConfigServer.SSID, theHTTPConfigServer.PASS);
-            err = theWiFiManager.Start(WiFiManagerMode::apsta, &staCfg, &apCfg);
-            if (err == ESP_OK) {
-                bits = events.WaitForAnyBit(xBitStaConnected | xBitStaDisconnected, msToWaitToConnect);
-                if ((bits & xBitStaDisconnected) != 0) {
-                    theHTTPConfigServer.credentialsState = CredentialsState::checkFail;
-                    ESP_LOGW(TAG, "Credentials test fail, reason %d", theWiFiManager.GetDisconnectReason());
-                }
-                if ((bits & xBitStaConnected) != 0) {
-                    theHTTPConfigServer.credentialsState = CredentialsState::checkSuccess;
-                    ESP_LOGI(TAG, "Credentials OK");
-                }
-                if ((bits & (xBitStaConnected | xBitStaDisconnected)) == 0) {
-                    theHTTPConfigServer.credentialsState = CredentialsState::checkTimeout;
-                    ESP_LOGE(TAG, "Credentials test timeout");
-                }
-            }
-            else {
-                theHTTPConfigServer.credentialsState = CredentialsState::processingError;
-                ESP_LOGE(TAG, "%d Credentials test error", err);
-
-                staCfg.SetFromNameAndMAC(apName, MAC);
-                theWiFiManager.Stop(true);
-                theWiFiManager.Start(WiFiManagerMode::apsta, &staCfg, &apCfg);
-            }
-
-            theHTTPConfigServer.StartServer();
-        }
-
-        if (theHTTPConfigServer.saveThem) {
-            theHTTPConfigServer.saveThem = false;
-            configuration.wcfg[0].SetFromStrings(theHTTPConfigServer.SSID, theHTTPConfigServer.PASS);
-
-            err = configuration.WriteConfiguration(false);
-
-            if (err == ESP_OK) {
-                done = true;
-                theHTTPConfigServer.credentialsSaveState = CredentialsSaveState::saved;
-            }
-            else {
-                theHTTPConfigServer.credentialsSaveState = CredentialsSaveState::saveError;
-            }
-        }
-    }
-
-    if (theHTTPConfigServer.credentialsSaveState == CredentialsSaveState::saved) {
-        // wait for user to see the status
-        uint8_t i = 20;
-        while (i > 0) {
-            vTaskDelay(100 / portTICK_PERIOD_MS);
-            i--;
-        }
-
-        theHTTPConfigServer.credentialsSaveState = CredentialsSaveState::saveRestart;
-
-        // wait for user to see the status
-        i = 50;
-        while (i > 0) {
-            vTaskDelay(100 / portTICK_PERIOD_MS);
-            i--;
-        }
-    }
-
-    httpServer->StopServer();
-*/
-
-    StopWiFi();
-
-    Restart();
-
-    return ESP_OK;
-}
-
-esp_err_t Board::StartAP(void)
-{
-    const char* apName = "DevX";
-    WiFiConfig ap;
-    esp_err_t err;
-
-    err = theWiFiManager.Initialize();
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "0x%x theWiFiManager.Initialize", err);
-        return err;
-    }
-
-    // connect as AP
-    GetMAC();
-    ap.SetFromNameAndMAC(apName, MAC);
-    err = theWiFiManager.Start(WiFiManagerMode::ap, nullptr, &ap);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "0x%x Start AP", err);
-        return err;
-    }
-
-    return ESP_OK;
-}
-
-void Board::StopWiFi(void)
-{
-    theWiFiManager.Stop(true);
-    theWiFiManager.Clean();
 }
 
 uint8_t* Board::GetMAC(void)
@@ -310,7 +160,11 @@ void Board::Restart(void)
 
 esp_err_t Board::InitializeWiFi(void)
 {
-    return theWiFiManager.Initialize();
+    esp_err_t res = theWiFiManager.Initialize();
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x theWiFiManager.Initialize", res);
+    }
+    return res;
 }
 
 esp_err_t Board::CleanWiFi(void)
@@ -318,7 +172,54 @@ esp_err_t Board::CleanWiFi(void)
     return theWiFiManager.Clean();
 }
 
-esp_err_t Board::Connect(uint8_t apIdx)
+esp_err_t Board::StartAP(void)
+{
+    const char* apName = "DevX";
+    WiFiConfig ap;
+
+    // connect as AP
+    GetMAC();
+    ap.SetFromNameAndMAC(apName, MAC);
+    esp_err_t err = theWiFiManager.Start(WiFiManagerMode::ap, nullptr, &ap);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x Start AP", err);
+        return err;
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t Board::StartStation()
+{
+    uint8_t idx = 0;
+    bool done = false;
+    esp_err_t res = ESP_FAIL;
+
+    if (configuration == nullptr) return ESP_ERR_INVALID_ARG;
+
+    while (!done && (idx < WiFiConfigCnt)) {
+        if (configuration->ap[idx].CheckData()) {
+            res = ConnectToAP(idx);
+            if (res == ESP_OK) {
+                // connected to an AP
+                ESP_LOGI(TAG, "Connected to \"%s\"", configuration->ap[idx].ssid.c_str());
+                done = true;
+            }
+            else {
+                ESP_LOGE(TAG, "Failed to connect to \"%s\"", configuration->ap[idx].ssid.c_str());
+                ++idx;
+            }
+        }
+        else {
+            ESP_LOGW(TAG, "AP configuration %d skipped", (idx + 1));
+            ++idx;
+        }
+    }
+
+    return done ? ESP_OK : res;
+}
+
+esp_err_t Board::ConnectToAP(uint8_t apIdx)
 {
     theWiFiManager.Stop(true);
 
@@ -352,7 +253,7 @@ esp_err_t Board::Connect(uint8_t apIdx)
     return err;
 }
 
-void Board::Disconnect(void)
+void Board::StopWiFiMode(void)
 {
     theWiFiManager.Stop(true);
 }

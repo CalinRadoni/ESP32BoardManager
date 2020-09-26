@@ -109,9 +109,9 @@ public:
     esp_err_t Start(WiFiManagerMode initMode, WiFiConfig* staCfg, WiFiConfig* apCfg);
 
     /**
-     * @brief Stop the WiFi
+     * @brief Stop current WiFi mode
      *
-     * This function stops the current WiFi.
+     * This function stops the current WiFi mode.
      * If requested and STA or APSTA is connected to an Access Point it will wait
      * for it to disconnect but no more then msToWaitForDisconnect miliseconds.
      */

@@ -48,6 +48,7 @@ public:
      * - calls CriticalInit()
      * - reads configuration from NVS
      * - calls BoardInit()
+     * - calls PostInit()
      *
      * The execution is transfered to GoodBye function when:
      * - NVS Initialization fails
@@ -58,6 +59,7 @@ public:
     virtual esp_err_t EarlyInit(void) = 0;
     virtual esp_err_t CriticalInit(void) = 0;
     virtual esp_err_t BoardInit(void) = 0;
+    virtual esp_err_t PostInit(void) = 0;
 
     /**
      * @brief Executes vTaskDelay every 100ms
@@ -68,23 +70,6 @@ public:
      * @brief Enters deep sleep for one hour
      */
     void GoodBye(void);
-
-    /**
-     * @brief Start the board in APSTA mode for configuration purposes
-     */
-    esp_err_t StartConfigurationAP(void);
-
-    /**
-     * @brief Start the board in AP mode
-     */
-    esp_err_t StartAP(void);
-
-    /**
-     * @brief Stop the WiFi
-     *
-     * Call this function when you're done with the mode started with StartXXX functions
-     */
-    void StopWiFi(void);
 
     /**
      * @brief Returns the base MAC address which is factory-programmed by Espressif in BLK0 of EFUSE.
@@ -106,19 +91,20 @@ public:
     esp_err_t CleanWiFi(void);
 
     /**
-     * @brief Connect to one of the saved AP
+     * @brief Start the board in AP mode
+     */
+    esp_err_t StartAP(void);
+
+    /**
+     * @brief Connect to one of the saved APs
      *
      * Tries to connect and wait for connection to complete or timeout.
      *
      * @returns ESP_ERR_INVALID_ARG if configuration is nullptr
-     * @returns ESP_ERR_INVALID_ARG if AP index is >= WiFiConfigCnt
      */
-    esp_err_t Connect(uint8_t);
+    esp_err_t StartStation(void);
 
-    /**
-     * @brief Disconnect
-     */
-    void Disconnect(void);
+    void StopWiFiMode(void);
 
     /**
      * @brief returns ESP32SimpleOTA::CheckApplicationImage()
@@ -137,7 +123,17 @@ protected:
     /**
      * @brief Placeholder for base MAC address
      */
+
     uint8_t MAC[6];
+    /**
+     * @brief Connect to one of the saved APs
+     *
+     * Tries to connect and wait for connection to complete or timeout.
+     *
+     * @returns ESP_ERR_INVALID_ARG if configuration is nullptr
+     * @returns ESP_ERR_INVALID_ARG if AP index is >= WiFiConfigCnt
+     */
+    esp_err_t ConnectToAP(uint8_t);
 };
 
 #endif

@@ -70,12 +70,12 @@ esp_err_t Configuration::InitializeNVS(void)
         // NVS partition was truncated and needs to be erased
         err = nvs_flash_erase();
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "%d nvs_flash_erase", err);
+            ESP_LOGE(TAG, "0x%x nvs_flash_erase", err);
         }
         else {
             err = nvs_flash_init();
             if (err != ESP_OK) {
-                ESP_LOGE(TAG, "%d nvs_flash_init", err);
+                ESP_LOGE(TAG, "0x%x nvs_flash_init", err);
             }
         }
     }
@@ -127,8 +127,6 @@ char* Configuration::GetStringFromJSON(const char *id, cJSON *jstr)
     if (!cJSON_IsString(item)) return nullptr;
     if (item->valuestring == NULL) return nullptr;
 
-    ESP_LOGI(TAG, "GetStringFromJSON %s = \"%s\"", id, item->valuestring);
-
     return item->valuestring;
 }
 
@@ -144,8 +142,6 @@ bool Configuration::SetStringFromJSON(char *str, uint8_t len, const char *id, cJ
         str[len - 1] = 0;
     }
 
-    ESP_LOGI(TAG, "SetStringFromJSON %s = \"%s\"", id, str);
-
     return true;
 }
 
@@ -157,7 +153,7 @@ bool Configuration::SetFromJSONString(char *jsonStr)
     if (cfg == NULL) {
         const char *errStr = cJSON_GetErrorPtr();
         if (errStr != NULL) {
-            ESP_LOGE(TAG, "JSON error before: %s", errStr);
+            ESP_LOGE(TAG, "JSON error before: \"%s\"", errStr);
         }
         return false;
     }
@@ -227,12 +223,12 @@ esp_err_t Configuration::ReadFromNVS(void)
     {
         // The namespace does not exists yet
         // Write a default configuration, no erase needed
-        ESP_LOGW(TAG, "%d nvs_open. Creating the namespace and default config.", err);
+        ESP_LOGW(TAG, "0x%x nvs_open. Creating the namespace and default config.", err);
         nvs_close(nvsHandle);
         return WriteToNVS(false);
     }
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "%d nvs_open NVS_READONLY", err);
+        ESP_LOGE(TAG, "0x%x nvs_open NVS_READONLY", err);
         nvs_close(nvsHandle);
         return err;
     }
@@ -240,10 +236,12 @@ esp_err_t Configuration::ReadFromNVS(void)
     size_t strBufLen = 0;
     err = nvs_get_str(nvsHandle, "json", NULL, &strBufLen);
     if (strBufLen == 0) {
-        ESP_LOGE(TAG, "%d nvs_get_str required length", err);
+        ESP_LOGE(TAG, "0x%x nvs_get_str required length", err);
         nvs_close(nvsHandle);
         return err;
     }
+
+    // TODO replace this code with vector
     char *str = (char*)malloc(strBufLen);
     if (str == NULL) {
         ESP_LOGE(TAG, "malloc str");
@@ -253,7 +251,7 @@ esp_err_t Configuration::ReadFromNVS(void)
     err = nvs_get_str(nvsHandle, "json", str, &strBufLen);
     if (err != ESP_OK) {
         free(str);
-        ESP_LOGE(TAG, "%d nvs_get_str", err);
+        ESP_LOGE(TAG, "0x%x nvs_get_str", err);
         nvs_close(nvsHandle);
         return err;
     }
@@ -283,7 +281,7 @@ esp_err_t Configuration::WriteToNVS(bool eraseAll)
 
     esp_err_t err = nvs_open(ConfigNVS, NVS_READWRITE, &nvsHandle);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "%d Failed to open NVS in readwrite mode", err);
+        ESP_LOGE(TAG, "0x%x Failed to open NVS in readwrite mode", err);
         return err;
     }
 
@@ -291,13 +289,13 @@ esp_err_t Configuration::WriteToNVS(bool eraseAll)
         err = nvs_erase_all(nvsHandle);
         if (err != ESP_OK) {
             nvs_close(nvsHandle);
-            ESP_LOGE(TAG, "%d Failed to erase", err);
+            ESP_LOGE(TAG, "0x%x Failed to erase", err);
             return err;
         }
         err = nvs_commit(nvsHandle);
         if (err != ESP_OK) {
             nvs_close(nvsHandle);
-            ESP_LOGE(TAG, "%d Failed to commit", err);
+            ESP_LOGE(TAG, "0x%x Failed to commit", err);
             return err;
         }
     }
