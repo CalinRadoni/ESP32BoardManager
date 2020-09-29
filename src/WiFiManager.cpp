@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "esp_wifi.h"
 #include "esp_system.h"
 #include "esp_event.h"
-#include "tcpip_adapter.h"
+#include "esp_netif.h"
 
 #include "WiFiManager.h"
 
@@ -57,6 +57,9 @@ WiFiManager::WiFiManager(void)
     workStatus = WiFiManagerStatus::idle;
     workMode   = WiFiManagerMode::none;
 
+    defaultAP = nullptr;
+    defaultSTA = nullptr;
+
     foundAPInfo = nullptr;
     foundAPcnt = 0;
 }
@@ -78,6 +81,15 @@ esp_err_t WiFiManager::Initialize(void)
     workStatus = WiFiManagerStatus::idle;
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+
+    /**
+     * defaultAP and defaultSTA are BOTH created here because
+     * those have to be created before calling esp_wifi_init
+     * so on-demand creation is not possible for now
+     */
+    CleanDefaultAPSTA();
+    defaultAP = esp_netif_create_default_wifi_ap();
+    defaultSTA = esp_netif_create_default_wifi_sta();
 
     esp_err_t err = esp_wifi_init(&cfg);
     if (err != ESP_OK) {
@@ -108,6 +120,18 @@ esp_err_t WiFiManager::Initialize(void)
     return ESP_OK;
 }
 
+void WiFiManager::CleanDefaultAPSTA(void)
+{
+    if (defaultSTA != nullptr) {
+        esp_netif_destroy(defaultSTA);
+        defaultSTA = nullptr;
+    }
+    if (defaultAP != nullptr) {
+        esp_netif_destroy(defaultAP);
+        defaultAP = nullptr;
+    }
+}
+
 esp_err_t WiFiManager::Clean(void)
 {
     esp_wifi_set_mode(WIFI_MODE_NULL);
@@ -129,6 +153,8 @@ esp_err_t WiFiManager::Clean(void)
         workStatus = WiFiManagerStatus::error;
         return err;
     }
+
+    CleanDefaultAPSTA();
 
     workStatus = WiFiManagerStatus::idle;
     return ESP_OK;
@@ -398,7 +424,7 @@ void WiFiManager::EventHandler(esp_event_base_t event_base, int32_t event_id, vo
             case IP_EVENT_STA_GOT_IP:
                 {
                 ip_event_got_ip_t* data = (ip_event_got_ip_t*)event_data;
-                ESP_LOGI(TAG, "Got IP: %s", ip4addr_ntoa(&data->ip_info.ip));
+                ESP_LOGI(TAG, "Got IP:" IPSTR "\n", IP2STR(&data->ip_info.ip));
                 workStatus = WiFiManagerStatus::staConnected;
                 if (events != nullptr)
                     events->SetBits(xBitStaConnected);

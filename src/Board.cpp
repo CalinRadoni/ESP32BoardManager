@@ -44,13 +44,17 @@ const uint32_t msToWaitToConnect =  60000UL;
 Board::Board(void)
 {
     initialized = false;
+    netInitialized = false;
     memset(MAC, 0, 6);
     configuration = nullptr;
 }
 
 Board::~Board(void)
 {
-    //
+    if (netInitialized) {
+        netInitialized = false;
+        esp_netif_deinit();
+    }
 }
 
 esp_err_t Board::Initialize(void)
@@ -91,7 +95,17 @@ esp_err_t Board::Initialize(void)
     }
     theWiFiManager.events = &events;
 
-    tcpip_adapter_init();
+    if (netInitialized) {
+        netInitialized = false;
+        esp_netif_deinit();
+    }
+    err = esp_netif_init();
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x esp_netif_init", err);
+        GoodBye();
+        return err;
+    }
+    netInitialized = true;
 
     err = CriticalInit();
     if (err != ESP_OK) {

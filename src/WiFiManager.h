@@ -168,6 +168,10 @@ private:
     WiFiManagerStatus workStatus;
     WiFiManagerMode workMode;
 
+    esp_netif_t* defaultAP;
+    esp_netif_t* defaultSTA;
+    void CleanDefaultAPSTA(void);
+
     esp_err_t ConfigStation(WiFiConfig *cfg);
     esp_err_t ConfigAP(WiFiConfig *cfg);
     esp_err_t ConfigAPStation(WiFiConfig* staCfg, WiFiConfig* apCfg);

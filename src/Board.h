@@ -119,6 +119,7 @@ protected:
     Configuration *configuration;
 
     bool initialized;
+    bool netInitialized;
 
     /**
      * @brief Placeholder for base MAC address

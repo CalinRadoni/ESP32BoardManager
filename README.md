@@ -3,6 +3,8 @@
 This is used as a base for deriving dedicated manager classes
 for each board based on ESP32.
 
+This component was tested with [ESP-IDF](https://github.com/espressif/esp-idf) **v4.1**.
+
 This is a *work-in-progress* and should be tested before use.
 
 It has some features like:
