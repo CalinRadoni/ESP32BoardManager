@@ -21,7 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "esp_err.h"
 #include "esp_log.h"
 
-#include <string.h>
+#include <string>
+#include <cstring>
+#include <vector>
 
 #include "esp_system.h"
 #include "esp_event.h"
@@ -29,6 +31,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Board.h"
 #include "pax_http_server.h"
+
+#include "esp_netif.h"
+#include "mdns.h"
 
 // -----------------------------------------------------------------------------
 
@@ -38,6 +43,9 @@ const uint64_t usInOneHour       = 3600000000ULL;
 
 const uint32_t msToWaitForScan   = 120000UL;
 const uint32_t msToWaitToConnect =  60000UL;
+
+const char* defaultDeviceName = "pax-device";
+const char* defaultDevicePass = "paxxword";
 
 // -----------------------------------------------------------------------------
 
@@ -188,12 +196,24 @@ esp_err_t Board::CleanWiFi(void)
 
 esp_err_t Board::StartAP(void)
 {
-    const char* apName = "DevX";
     WiFiConfig ap;
 
-    // connect as AP
-    GetMAC();
-    ap.SetFromNameAndMAC(apName, MAC);
+    ap.Initialize();
+    if (configuration != nullptr) {
+        if (!configuration->name.empty()) {
+            ap.ssid = configuration->name;
+        }
+        if (configuration->pass.length() > 7) {
+            ap.pass = configuration->pass;
+        }
+    }
+    if (ap.ssid.empty()) {
+        BuildDefaultDeviceName(ap.ssid);
+    }
+    if (ap.pass.empty()) {
+        ap.pass = defaultDevicePass;
+    }
+
     esp_err_t err = theWiFiManager.Start(WiFiManagerMode::ap, nullptr, &ap);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x Start AP", err);
@@ -275,4 +295,51 @@ void Board::StopWiFiMode(void)
 esp_err_t Board::CheckApplicationImage(void)
 {
     return simpleOTA.CheckApplicationImage();
+}
+
+void Board::BuildDefaultDeviceName(std::string& str)
+{
+    str.clear();
+
+    GetMAC();
+
+    std::string formatString = "%s-%02X%02X%02X";
+    int size = std::snprintf(nullptr, 0, formatString.c_str(), defaultDeviceName, MAC[3], MAC[4], MAC[5]);
+    if (size <= 0) {
+        str = defaultDeviceName;
+        return;
+    }
+
+    std::vector<char> buffer(size + 1);
+    std::snprintf(buffer.data(), buffer.size(), formatString.c_str(), defaultDeviceName, MAC[3], MAC[4], MAC[5]);
+    str = buffer.data();
+}
+
+esp_err_t Board::InitializeMDNS(void)
+{
+    esp_err_t res = mdns_init();
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize mDNS");
+        return res;
+    }
+
+    std::string name;
+    if (configuration != nullptr) {
+        if (!configuration->name.empty()) {
+            name = configuration->name;
+        }
+    }
+    if (name.empty()) {
+        BuildDefaultDeviceName(name);
+    }
+
+    mdns_hostname_set(name.c_str());
+
+    return res;
+}
+
+void Board::CleanupMDNS(void)
+{
+    mdns_service_remove_all();
+    mdns_free();
 }

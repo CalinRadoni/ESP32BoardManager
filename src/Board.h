@@ -111,6 +111,8 @@ public:
      */
     esp_err_t CheckApplicationImage(void);
 
+    void BuildDefaultDeviceName(std::string& str);
+
 protected:
     EventGroupHandler events;
 
@@ -124,8 +126,8 @@ protected:
     /**
      * @brief Placeholder for base MAC address
      */
-
     uint8_t MAC[6];
+
     /**
      * @brief Connect to one of the saved APs
      *
@@ -135,6 +137,9 @@ protected:
      * @returns ESP_ERR_INVALID_ARG if AP index is >= WiFiConfigCnt
      */
     esp_err_t ConnectToAP(uint8_t);
+
+    esp_err_t InitializeMDNS(void);
+    void CleanupMDNS(void);
 };
 
 #endif

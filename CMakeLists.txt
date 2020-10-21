@@ -13,7 +13,9 @@ set(c_PRIVATE_REQUIREMENTS
 
 set(c_REQUIREMENTS
     esp_http_server
+    esp_netif
     json
+    mdns
     ESP32HAL
     ESP32SimpleOTA
 )
