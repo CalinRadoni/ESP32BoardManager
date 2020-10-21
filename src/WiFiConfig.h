@@ -50,16 +50,6 @@ public:
 
     void SetFromStrings(const char* strSSID, const char* strPASS);
 
-    /**
-     * @brief Builds the name and password for configuration AP
-     *
-     * Sets {@code ssid} to "name-hex(MAC[3]MAC[4]MAC[5])"
-     * If {@code name} or {@code MAC} are nullptr, {@code ssid} will be "pax-device"
-     *
-     * Sets {@code pass} to "paxxword"
-     */
-    void SetFromNameAndMAC(const char* name, const uint8_t* MAC);
-
 private:
 };
 

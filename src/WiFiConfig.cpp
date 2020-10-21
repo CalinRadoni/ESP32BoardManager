@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <cstring>
-#include <vector>
 
 WiFiConfig::WiFiConfig(void)
 {
@@ -107,22 +106,4 @@ void WiFiConfig::SetFromStrings(const char* strSSID, const char* strPASS)
     pass.clear();
     if (strPASS != nullptr)
         pass = strPASS;
-}
-
-void WiFiConfig::SetFromNameAndMAC(const char* name, const uint8_t* MAC)
-{
-    Initialize();
-
-    ssid = "pax-device";
-    pass = "paxxword";
-
-    if ((name == nullptr) || (MAC == nullptr)) return;
-
-    std::string formatString = "%s-%02X%02X%02X";
-    int size = std::snprintf(nullptr, 0, formatString.c_str(), name, MAC[3], MAC[4], MAC[5]);
-    if (size <= 0) return;
-
-    std::vector<char> buffer(size + 1);
-    std::snprintf(buffer.data(), buffer.size(), formatString.c_str(), name, MAC[3], MAC[4], MAC[5]);
-    ssid = buffer.data();
 }
