@@ -35,8 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static const char* TAG = "Configuration";
 
-const uint32_t ConfigurationVersion = 2;
+const uint32_t ConfigurationVersion = 3;
 const char* ConfigNVS = "pax-config";
+const char* ConfigJSON = "cfgJSON";
 
 // -----------------------------------------------------------------------------
 
@@ -54,6 +55,7 @@ void Configuration::InitData(void)
 {
     version = ConfigurationVersion;
     name.clear();
+    pass.clear();
 
     for (uint8_t i = 0; i < WiFiConfigCnt; ++i)
         ap->Initialize();
@@ -96,6 +98,7 @@ char* Configuration::CreateJSONConfigString(bool addWhitespaces)
 
     if (cJSON_AddNumberToObject(cfg, "version", version) == NULL) { cJSON_Delete(cfg); return str; }
     if (cJSON_AddStringToObject(cfg, "name", name.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
+    if (cJSON_AddStringToObject(cfg, "pass", name.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
 
     if (cJSON_AddStringToObject(cfg, "ap1s", ap[0].ssid.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
     if (cJSON_AddStringToObject(cfg, "ap1p", ap[0].pass.c_str()) == NULL) { cJSON_Delete(cfg); return str; }
@@ -193,6 +196,7 @@ bool Configuration::SetFromJSONString(char *jsonStr)
     // ... so the exit code is not checked, any of these may be missing
     // the default values are set by the previous call to InitData
     SetStringFromJSON(name, "name", cfg);
+    SetStringFromJSON(pass, "pass", cfg);
     SetStringFromJSON(ap[0].ssid, "ap1s", cfg);
     SetStringFromJSON(ap[0].pass, "ap1p", cfg);
     SetStringFromJSON(ap[1].ssid, "ap2s", cfg);
@@ -232,7 +236,7 @@ esp_err_t Configuration::ReadFromNVS(void)
     }
 
     size_t strBufLen = 0;
-    err = nvs_get_str(nvsHandle, "json", NULL, &strBufLen);
+    err = nvs_get_str(nvsHandle, ConfigJSON, NULL, &strBufLen);
     if (strBufLen == 0) {
         ESP_LOGE(TAG, "0x%x nvs_get_str required length", err);
         nvs_close(nvsHandle);
@@ -245,7 +249,7 @@ esp_err_t Configuration::ReadFromNVS(void)
         nvs_close(nvsHandle);
         return err;
     }
-    err = nvs_get_str(nvsHandle, "json", str, &strBufLen);
+    err = nvs_get_str(nvsHandle, ConfigJSON, str, &strBufLen);
     if (err != ESP_OK) {
         delete[] str;
         ESP_LOGE(TAG, "0x%x nvs_get_str", err);
@@ -301,7 +305,7 @@ esp_err_t Configuration::WriteToNVS(bool eraseAll)
         return ESP_FAIL;
     }
 
-    err = nvs_set_str(nvsHandle, "json", str);
+    err = nvs_set_str(nvsHandle, ConfigJSON, str);
     free(str);
     if (err != ESP_OK) {
         nvs_close(nvsHandle);
