@@ -319,7 +319,7 @@ esp_err_t Board::InitializeMDNS(void)
 {
     esp_err_t res = mdns_init();
     if (res != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to initialize mDNS");
+        ESP_LOGE(TAG, "0x%x mdns_init", res);
         return res;
     }
 
@@ -333,9 +333,21 @@ esp_err_t Board::InitializeMDNS(void)
         BuildDefaultDeviceName(name);
     }
 
-    mdns_hostname_set(name.c_str());
+    ESP_LOGI(TAG, "Setting the mDNS hostname to %s", name.c_str());
 
-    return res;
+    res = mdns_hostname_set(name.c_str());
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x mdns_hostname_set", res);
+        return res;
+    }
+
+    res = mdns_instance_name_set(name.c_str());
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x mdns_instance_name_set", res);
+        return res;
+    }
+
+    return ESP_OK;
 }
 
 void Board::CleanupMDNS(void)
