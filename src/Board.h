@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pax_http_server.h"
 #include "WiFiManager.h"
 
+#include "esp32_hal_cpu.h"
 #include "esp32_hal_gpio.h"
 #include "esp32_hal_adc.h"
 #include "esp32_hal_i2c.h"
@@ -70,6 +71,8 @@ public:
      * @brief Enters deep sleep for one hour
      */
     void GoodBye(void);
+
+    esp32hal::CPU esp32;
 
     /**
      * @brief Returns the base MAC address which is factory-programmed by Espressif in BLK0 of EFUSE.
