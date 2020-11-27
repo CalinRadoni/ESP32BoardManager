@@ -315,19 +315,32 @@ esp_err_t PaxHttpServer::HandlePost_CmdJson(httpd_req_t* req)
     HTTPCommand cmd;
 
     cJSON *root = cJSON_Parse(workBuffer);
-    if (root != nullptr) {
+    if (root == nullptr) {
+        const char *errStr = cJSON_GetErrorPtr();
+        if (errStr != nullptr) {
+            ESP_LOGE(TAG, "JSON error before: \"%s\"", errStr);
+        }
+    }
+    else {
         cJSON *item;
+
         item = cJSON_GetObjectItem(root, "cmd");
         if (item != nullptr) {
-            cmd.command = (uint8_t)item->valueint;
+            if (cJSON_IsNumber(item)) {
+                cmd.command = (uint8_t)item->valueint;
+            }
         }
+
         item = cJSON_GetObjectItem(root, "data");
         if (item != nullptr) {
-            if (item->type == cJSON_Number) {
+            if (cJSON_IsNumber(item)) {
                 cmd.data = (uint32_t)item->valuedouble;
             }
             else {
-                cmd.data = (uint32_t)strtoul(item->valuestring, nullptr, 10);
+                if (cJSON_IsString(item)) {
+                    if (item->valuestring != nullptr)
+                        cmd.data = (uint32_t)strtoul(item->valuestring, nullptr, 10);
+                }
             }
         }
 
