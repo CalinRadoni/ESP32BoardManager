@@ -1,0 +1,229 @@
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+html {
+    font-family: "Segoe UI",Roboto,Oxygen,Ubuntu,Helvetica,Arial,sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3 {
+    margin: 1rem 0 0.5rem;
+    font-weight: bold;
+}
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.2rem; }
+
+.fullheight {
+    height: 100vh;
+}
+
+.sidebar {
+    background: #37414f;
+    color: #eee;
+    flex: 0 0 auto;
+}
+
+.header {
+    text-align: center;
+    top: auto;
+    margin: 3em auto;
+}
+
+.title, .tagline {
+    margin: 0;
+}
+.title {
+    color: #eee;
+}
+.tagline {
+    color: #bbb;
+}
+
+a {
+    text-decoration: none;
+    color: #5957f0;
+}
+a:hover,
+a:focus {
+    text-decoration: underline;
+}
+
+.nav {
+    margin: 1rem 0;
+}
+
+.nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: center;
+    overflow: hidden;
+}
+.nav ul li {
+    display: inline-block;
+    margin: 0 2px;
+}
+.nav ul li a {
+    padding: 4px 8px;
+    background: transparent;
+    border: 2px solid #eee;
+    border-radius: 4px;
+    color: #eee;
+    display: block;
+}
+.nav ul li a:hover,
+.nav ul li a:focus {
+    border-color: #5957f0;
+    text-decoration: none;
+}
+
+.content {
+    padding: 1rem;
+    flex: 1 1 0;
+    display: flex;
+    flex-flow: column;
+}
+
+.section {
+    margin-bottom: 1rem;
+}
+
+.log {
+    margin-top: auto;
+}
+.log-error, .log-warning, .log-info {
+    margin: 0;
+    line-height: 1.2;
+    padding: 2px 0;
+    font-size: 0.9rem;
+    color: gray;
+}
+.log-error {
+    background-color: lightpink;
+}
+.log-warning {
+    background-color: lightyellow;
+}
+
+.frow {
+    display: flex;
+    flex-flow: column;
+    align-items: stretch;
+}
+
+.srow {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: stretch;
+}
+.scell {
+    flex: 1 1 0;
+}
+.colorBox {
+    min-height: 2rem;
+}
+
+.intSel {
+    width: 300px;
+}
+
+input {
+    font-family: inherit;
+    font-size: inherit;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+}
+
+.config {
+    display: flex;
+    flex-flow: column;
+    max-width: 400px;
+    margin: 0 auto;
+}
+.cfgrow {
+    display: flex;
+    flex-flow: row wrap;
+}
+.cfgcell {
+    flex: 1 1 100%;
+    margin: 0 8px 8px 8px;
+}
+.cfgL {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #222;
+}
+.cfgI {
+    font-size: 0.9rem;
+    font-weight: normal;
+    font-style: italic;
+    color: #555;
+}
+
+button {
+    padding: 0.25rem 0.5rem;
+    border: solid 1px #bbb;
+    border-radius: 4px;
+    color: #222;
+    background-color: #ddd;
+}
+button:hover,
+button:focus {
+    background-color: #f0f0f0;
+}
+button:disabled {
+    color: #888;
+    background-color: #f0f0f0;
+}
+
+/* for show / hide password buttons, fixed width is needed */
+.shb {
+    width: 5rem;
+    margin-left: 0.5rem;
+}
+
+.mrgLeft {
+    margin-left: 0.5rem;
+}
+
+.aleft { text-align: left; }
+.acenter { text-align: center; }
+.aright { text-align: right; }
+
+@media (min-width: 768px) {
+    .sidebar {
+        flex: 0 0 256px;
+    }
+
+    .header {
+        margin: 3rem 1rem 0;
+        text-align: right;
+    }
+
+    .nav ul li {
+        display: block;
+        margin: 4px 0;
+    }
+
+    .frow {
+        display: flex;
+        flex-flow: row nowrap;
+    }
+
+    .config {
+        max-width: 800px;
+    }
+    .cfgrow {
+        flex-flow: row nowrap;
+    }
+}

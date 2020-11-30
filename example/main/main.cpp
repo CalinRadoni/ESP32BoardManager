@@ -1,0 +1,103 @@
+/**
+This file is part of ESP32BoardManager esp-idf component
+(https://github.com/CalinRadoni/ESP32BoardManager)
+Copyright (C) 2020 by Calin Radoni
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_err.h"
+#include "esp_log.h"
+#include "esp_system.h"
+
+#include "ExampleBoard.h"
+
+const char* TAG = "main.cpp";
+
+ExampleBoard board;
+
+static TaskHandle_t xHTTPHandlerTask = NULL;
+static TaskHandle_t xLoopTask = NULL;
+
+HTTPCommand cmd;
+
+extern "C" {
+
+    static void LoopTask(void *taskParameter) {
+        for(;;) {
+            if (cmd.command != 0) {
+                ESP_LOGI(TAG, "Received command %d with data 0x%x", cmd.command, cmd.data);
+                cmd.command = 0;
+                cmd.data = 0;
+            }
+
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+        }
+
+        // the next lines are here only for "completion"
+        vTaskDelete(NULL);
+    }
+
+    static void HTTPTask(void *taskParameter) {
+        HTTPCommand httpCmd;
+
+        QueueHandle_t serverQueue;
+        serverQueue = board.GetHttpServerQueue();
+
+        for(;;) {
+            if (xQueueReceive(serverQueue, &httpCmd, portMAX_DELAY) == pdPASS) {
+                cmd.command = httpCmd.command;
+                cmd.data = httpCmd.data;
+            }
+        }
+
+        // the next lines are here only for "completion"
+        vTaskDelete(NULL);
+    }
+
+    void app_main()
+    {
+        board.CheckApplicationImage();
+
+        esp_err_t err = board.Initialize();
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Initialization failed !");
+            board.DoNothingForever();
+        }
+        ESP_LOGI(TAG, "Board initialized OK");
+
+        board.PowerOn();
+
+        xTaskCreate(HTTPTask, "HTTP command handling task", 2048, NULL, uxTaskPriorityGet(NULL) + 1, &xHTTPHandlerTask);
+        if (xHTTPHandlerTask != NULL) {
+            ESP_LOGI(TAG, "HTTP command handling task created.");
+        }
+        else {
+            ESP_LOGE(TAG, "Failed to create the HTTP command handling task !");
+            board.DoNothingForever();
+        }
+
+        xTaskCreate(LoopTask, "Loop task", 4096, NULL, uxTaskPriorityGet(NULL) + 1, &xLoopTask);
+        if (xLoopTask != NULL) {
+            ESP_LOGI(TAG, "Loop task created.");
+        }
+        else {
+            ESP_LOGE(TAG, "Failed to create the Loop task !");
+            board.DoNothingForever();
+        }
+    }
+
+}

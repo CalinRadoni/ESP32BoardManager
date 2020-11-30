@@ -1,0 +1,9 @@
+# these are installed / updated as needed
+/node_modules/
+
+# here are the temporary files generated during build
+/tmp/
+
+# from the web directory, only the index.html.gz is needed
+/web/*
+!/web/index.html.gz

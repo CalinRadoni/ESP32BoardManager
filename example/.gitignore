@@ -1,0 +1,4 @@
+# ignore ESP-IDF's generated files
+/build/
+/sdkconfig
+/sdkconfig.old
