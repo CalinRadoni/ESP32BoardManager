@@ -137,6 +137,22 @@ esp_err_t Board::Initialize(void)
         return err;
     }
 
+    wifi_ps_type_t psType = WIFI_PS_MIN_MODEM;
+    err = esp_wifi_get_ps(&psType);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "0x%x esp_wifi_get_ps", err);
+        psType = WIFI_PS_MIN_MODEM;
+    }
+    if (psType != WIFI_PS_NONE) {
+        err = esp_wifi_set_ps(WIFI_PS_NONE);
+        if (err == ESP_OK) {
+            ESP_LOGI(TAG, "Current WiFi power save set to WIFI_PS_NONE");
+        }
+        else {
+            ESP_LOGE(TAG, "0x%x esp_wifi_set_ps", err);
+        }
+    }
+
     err = PostInit();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x PostInit", err);
