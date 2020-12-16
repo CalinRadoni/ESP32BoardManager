@@ -349,7 +349,7 @@ esp_err_t Board::InitializeMDNS(void)
         BuildDefaultDeviceName(name);
     }
 
-    ESP_LOGI(TAG, "Setting the mDNS hostname to %s", name.c_str());
+    ESP_LOGI(TAG, "Setting the mDNS hostname to %s.local", name.c_str());
 
     res = mdns_hostname_set(name.c_str());
     if (res != ESP_OK) {
