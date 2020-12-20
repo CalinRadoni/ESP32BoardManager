@@ -28,31 +28,23 @@ The provided **example** is a working implementation that can be used as *Gettin
 
 ### Web interface
 
-<img src="assets/webl.png" height="300px">
-<div style="width:100%; overflow: hidden; height: auto;">
-    <div>
-        <img src="assets/webp.png" style="float: left; width: 300px; margin: 0 1rem 0 0;" width="100%">
-    </div>
-    <div>
-        <p>The two images around this paragraph are showing the current web interface.<br>
-        <br>
-        The web server pages are in <code>html/web/index.html.gz</code>, which is generated using the <code>html/build.sh</code> script.<br>
-        The script needs <a href="https://nodejs.org/">Node.js</a> and a few other packages like: 
-        <code>clean-css</code>, <code>clean-css-cli</code>, <code>html-minifier</code>, <code>inline-source</code>, <code>inline-source-cli</code>,
-        <code>jshint</code> and <code>terser"</code> and it have these options:
-        </p>
-        <ul style="list-style-position: inside;">
-        <li>-h exit after showing the help message</li>
-        <li>-c exit after cleaning the temporary and output directories</li>
-        <li>-k clean before build</li>
-        <li>-p build in production mode</li>
-        <li>-n help for Node.js, npm and npm modules</li>
-        </ul>
-        <p>
-        See <a href="https://calinradoni.github.io/pages/200913-embedded-website-bash.html">Embedded website workflow - bash</a> for more information.
-        </p>
-    </div>
-</div>
+This is the current web interface:
+
+![web interface portrait](assets/webp.png)
+![web interface landscape](assets/webl.png)
+
+The web server pages are in `html/web/index.html.gz`, which is generated using the `html/build.sh` script.
+
+The script needs [Node.js](https://nodejs.org) and a few other packages like:
+`clean-css`, `clean-css-cli`, `html-minifier`, `inline-source`, `inline-source-cli`, `jshint` and `terser` and it have these options:
+
+- -h exit after showing the help message
+- -c exit after cleaning the temporary and output directories
+- -k clean before build
+- -p build in production mode
+- -n help for Node.js, npm and npm modules
+
+See [Embedded website workflow - bash](https://calinradoni.github.io/pages/200913-embedded-website-bash.html) for more information.
 
 ## Tests
 
