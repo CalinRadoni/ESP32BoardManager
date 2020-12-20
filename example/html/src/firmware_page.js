@@ -14,9 +14,9 @@ class FirmwarePage {
         xstr = xstr + '<h3>Firmware</h3>';
         xstr = xstr + '<input type="file" id="fwf" accept=".bin" style="display:none" onchange="firmwarePage.SelectFW()" />';
         xstr = xstr + '<button id="fwbs" onclick="firmwarePage.ClickFW()">Select firmware file</button>';
-        xstr = xstr + '<span class="mrgLeft" id="swf"></span><br/><br/>';
+        xstr = xstr + '<span class="mLeft" id="swf"></span><br/><br/>';
         xstr = xstr + '<button id="fwbu" onclick="app.UpFW()" disabled>Upload firmware</button>';
-        xstr = xstr + '<span class="mrgLeft" id="swi"></span><br/><br/>';
+        xstr = xstr + '<span class="mLeft" id="swi"></span><br/><br/>';
         xstr = xstr + '<button id="fwbr" onclick="app.ResetBoard()" disabled>Reset</button>';
 
         this.pdiv.innerHTML = xstr;

@@ -201,13 +201,12 @@ button:disabled {
     background: none;
 }
 
-.mrgLeft {
-    margin-left: 0.5rem;
-}
+.mLeft { margin-left: 0.5rem; }
+.mTop  { margin-top: 0.5rem; }
 
-.aleft { text-align: left; }
+.aleft   { text-align: left; }
 .acenter { text-align: center; }
-.aright { text-align: right; }
+.aright  { text-align: right; }
 
 @media (min-width: 640px) {
     .sidebar {

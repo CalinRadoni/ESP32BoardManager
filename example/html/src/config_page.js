@@ -26,8 +26,8 @@ class ConfigPage {
             '<div class="cfgrow">' +
                 '<div class="cfgcell"><p class="cfgI" id="pversion"></p></div>' +
                 '<div class="cfgcell aright">' +
-                    '<button class="mrgLeft" onclick="app.GetConfig()">Reload</button>' +
-                    '<button class="mrgLeft" onclick="app.SaveConfig()">Save</button>' +
+                    '<button class="mLeft" onclick="app.GetConfig()">Reload</button>' +
+                    '<button class="mLeft" onclick="app.SaveConfig()">Save</button>' +
                 '</div>' +
             '</div></div>';
 
