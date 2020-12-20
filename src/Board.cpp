@@ -70,6 +70,8 @@ esp_err_t Board::Initialize(void)
     if (initialized)
         return ESP_ERR_INVALID_STATE;
 
+    cpu.ReadChipInfo();
+
     esp_err_t err = EarlyInit();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x EarlyInit", err);
@@ -151,6 +153,33 @@ esp_err_t Board::Initialize(void)
         else {
             ESP_LOGE(TAG, "0x%x esp_wifi_set_ps", err);
         }
+    }
+
+    const esp_app_desc_t *appDescription;
+    appDescription = esp_ota_get_app_description();
+    if (appDescription->magic_word != 0xabcd5432) {
+        ESP_LOGE(TAG, "esp_ota_get_app_description");
+    }
+    else {
+        appName = appDescription->project_name;
+        appVersion = appDescription->version;
+        compileTime = appDescription->date;
+        compileTime += ' ';
+        compileTime += appDescription->time;
+        idfVersion = appDescription->idf_ver;
+        ESP_LOGI(TAG, "%s %s compiled with ESP_IDF %s on %s",
+            appName.c_str(), appVersion.c_str(), idfVersion.c_str(), compileTime.c_str());
+
+        const char hex[17] = "0123456789abcdef";
+        const uint8_t *sha256 = appDescription->app_elf_sha256;
+        elfSHA256.clear();
+        elfSHA256.reserve(64);
+        for (uint8_t i = 32; i > 0; --i) {
+            elfSHA256 += hex[(*sha256 >> 4) & 0x0F];
+            elfSHA256 += hex[*sha256 & 0x0F];
+            ++sha256;
+        }
+        ESP_LOGI(TAG, "SHA256 of elf file: %s", elfSHA256.c_str());
     }
 
     err = PostInit();

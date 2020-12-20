@@ -122,9 +122,16 @@ protected:
     WiFiManager theWiFiManager;
     ESP32SimpleOTA simpleOTA;
     Configuration *configuration;
+    esp32hal::CPU cpu;
 
     bool initialized;
     bool netInitialized;
+
+    std::string appName;
+    std::string appVersion;
+    std::string compileTime;
+    std::string idfVersion;
+    std::string elfSHA256;
 
     /**
      * @brief Placeholder for base MAC address
