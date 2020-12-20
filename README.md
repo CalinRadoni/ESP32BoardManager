@@ -30,10 +30,10 @@ The provided **example** is a working implementation that can be used as *Gettin
 
 <img src="assets/webl.png" height="300px">
 <div style="width:100%; overflow: hidden; height: auto;">
-    <div style="float: left; width: 300px; margin: 0 1rem 0 0;">
-        <img src="assets/webp.png" width="100%">
+    <div>
+        <img src="assets/webp.png" style="float: left; width: 300px; margin: 0 1rem 0 0;" width="100%">
     </div>
-    <div style="float:none;">
+    <div>
         <p>The two images around this paragraph are showing the current web interface.<br>
         <br>
         The web server pages are in <code>html/web/index.html.gz</code>, which is generated using the <code>html/build.sh</code> script.<br>
