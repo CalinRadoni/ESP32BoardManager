@@ -54,7 +54,7 @@ char* ExampleBoardHTTPSrv::CreateJSONStatusString(bool addWhitespaces)
         cJSON_Delete(cfg);
         return str;
     }
-    if (cJSON_AddStringToObject(cfg, "tagline", "example board") == NULL) {
+    if (cJSON_AddStringToObject(cfg, "tagline", tagline.c_str()) == NULL) {
         cJSON_Delete(cfg);
         return str;
     }

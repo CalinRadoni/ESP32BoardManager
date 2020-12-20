@@ -28,6 +28,8 @@ public:
     ExampleBoardHTTPSrv(void);
     virtual ~ExampleBoardHTTPSrv();
 
+    std::string tagline;
+
 protected:
     /**
      * @warning Delete returned string with 'free' !

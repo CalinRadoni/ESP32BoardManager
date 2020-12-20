@@ -116,6 +116,9 @@ esp_err_t ExampleBoard::PostInit(void)
             ESP_LOGI(TAG, "HTTP Server started");
         }
     }
+    httpServer.tagline = appName;
+    httpServer.tagline += ' ';
+    httpServer.tagline += appVersion;
 
     res = InitializeMDNS();
     if (res != ESP_OK) {
