@@ -37,3 +37,31 @@ ExampleBoardHTTPSrv::~ExampleBoardHTTPSrv(void)
 {
     //
 }
+
+// -----------------------------------------------------------------------------
+
+char* ExampleBoardHTTPSrv::CreateJSONStatusString(bool addWhitespaces)
+{
+    char *str = nullptr;
+
+    if (configuration == nullptr) {
+        return str;
+    }
+
+    cJSON *cfg = cJSON_CreateObject();
+
+    if (cJSON_AddStringToObject(cfg, "title", configuration->name.c_str()) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+    if (cJSON_AddStringToObject(cfg, "tagline", "example board") == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+
+    if (addWhitespaces) { str = cJSON_Print(cfg); }
+    else                { str = cJSON_PrintUnformatted(cfg); }
+
+    cJSON_Delete(cfg);
+    return str;
+}

@@ -227,15 +227,29 @@ esp_err_t PaxHttpServer::SetJsonHeader(httpd_req_t* req)
     return httpd_resp_set_hdr(req, "Pragma", "no-cache");
 }
 
+char* PaxHttpServer::CreateJSONStatusString(bool addWhitespaces)
+{
+    return nullptr;
+}
+
 esp_err_t PaxHttpServer::HandleGet_StatusJson(httpd_req_t* req)
 {
+    char *str = CreateJSONStatusString(true);
+    if (str == nullptr) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "status.json");
+        return ESP_FAIL;
+    }
+
     esp_err_t res = SetJsonHeader(req);
-    if(res != ESP_OK) return res;
+    if(res != ESP_OK) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "status.json");
+        free(str);
+        return res;
+    }
 
-    uint8_t statusVal = 0;
-    snprintf(workBuffer, workBufferSize, "{\"status\":%d}\n", statusVal);
-
-    return httpd_resp_sendstr(req, workBuffer);
+    res = httpd_resp_sendstr(req, str);
+    free(str);
+    return res;
 }
 
 esp_err_t PaxHttpServer::HandleGet_ConfigJson(httpd_req_t* req)

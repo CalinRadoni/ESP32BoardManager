@@ -97,6 +97,11 @@ protected:
     esp_err_t HandleOTA(httpd_req_t*);
 
     Configuration* configuration;
+
+    /**
+     * @warning Delete returned string with 'free' !
+     */
+    virtual char* CreateJSONStatusString(bool addWhitespaces);
 };
 
 #endif

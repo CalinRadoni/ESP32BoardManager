@@ -23,13 +23,13 @@ class ConfigPage {
                 this.addTextInput('Backup SSID', 'pap2s', '') +
                 this.addPasswordInput('Backup password', 'pap2p', '') +
             '</div>' +
-            '<div class="cfgrow"><div class="cfgcell"><p class="cfgI" id="pversion"></p></div></div>' +
             '<div class="cfgrow">' +
-            '<div class="cfgcell aright">' +
-                '<button class="mrgLeft" onclick="app.GetConfig()">Reload</button>' +
-                '<button class="mrgLeft" onclick="app.SaveConfig()">Save</button>' +
-            '</div></div>' +
-            '</div>';
+                '<div class="cfgcell"><p class="cfgI" id="pversion"></p></div>' +
+                '<div class="cfgcell aright">' +
+                    '<button class="mrgLeft" onclick="app.GetConfig()">Reload</button>' +
+                    '<button class="mrgLeft" onclick="app.SaveConfig()">Save</button>' +
+                '</div>' +
+            '</div></div>';
 
         this.pdiv.innerHTML = s;
 
@@ -49,8 +49,8 @@ class ConfigPage {
         let s = '<div class="cfgcell">' +
                 '<label class="cfgL" for="' + id + '">' + label + '</label>' +
                 '<div class="srow">' +
-                '<input class="scell" type="password" id="' + id + '" value="' + value + '">' +
-                '<button class="shb" onclick="app.TogglePass(this, &quot;' + id + '&quot;)">show</button>' +
+                '<input class="scellp" type="password" id="' + id + '" value="' + value + '">' +
+                '<button class="shb" onclick="app.TogglePass(this, &quot;' + id + '&quot;)">O</button>' +
                 '</div></div>';
         return s;
     }

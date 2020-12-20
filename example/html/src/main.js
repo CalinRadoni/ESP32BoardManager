@@ -1,6 +1,36 @@
 class App {
     constructor(logger) {
+        this.InitInfo();
     }
+
+    InitInfo() {
+        this.title = '';
+        this.tagline = '';
+    }
+
+    InfoFromString(jStr) {
+        let cfg = JSON.parse(jStr);
+
+        if (cfg.hasOwnProperty('title'))
+            this.title = cfg.title;
+        if (cfg.hasOwnProperty('tagline'))
+            this.tagline = cfg.tagline;
+
+        this.toPage();
+    }
+
+    toPage() {
+        let a = null;
+
+        a = document.getElementById('title');
+        if (a !== null)
+            a.innerHTML = this.title;
+
+        a = document.getElementById('tagline');
+        if (a !== null)
+            a.innerHTML = this.tagline;
+    }
+
 
     Initialize() {
         logger.set_parent_div(document.getElementById('LOG'));
@@ -10,6 +40,7 @@ class App {
         configPage.set_parent_div(appel);
         firmwarePage.set_parent_div(appel);
 
+        this.GetInfo();
         this.GetConfig();
 
         this.HashHandler();
@@ -46,6 +77,19 @@ class App {
             }
         };
         xhr.open("GET", "/config.json", true);
+        xhr.send();
+    }
+
+    GetInfo() {
+        let xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+            if (xhr.readyState === xhr.DONE) {
+                if (xhr.status === 200) {
+                    app.InfoFromString(xhr.responseText);
+                }
+            }
+        };
+        xhr.open("GET", "/status.json", true);
         xhr.send();
     }
 
@@ -123,11 +167,11 @@ class App {
 
         if (e.getAttribute('type') === 'text' ) {
             e.setAttribute('type', 'password');
-            b.innerText = 'show';
+            b.innerText = 'O';
         }
         else {
             e.setAttribute('type', 'text');
-            b.innerText = 'hide';
+            b.innerText = 'X';
         }
     }
 

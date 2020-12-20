@@ -27,6 +27,12 @@ class ExampleBoardHTTPSrv : public PaxHttpServer
 public:
     ExampleBoardHTTPSrv(void);
     virtual ~ExampleBoardHTTPSrv();
+
+protected:
+    /**
+     * @warning Delete returned string with 'free' !
+     */
+    virtual char* CreateJSONStatusString(bool addWhitespaces);
 };
 
 #endif

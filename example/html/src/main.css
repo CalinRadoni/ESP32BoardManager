@@ -36,7 +36,7 @@ h3 { font-size: 1.2rem; }
 .header {
     text-align: center;
     top: auto;
-    margin: 3em auto;
+    margin: 1rem auto 2rem auto;
 }
 
 .title, .tagline {
@@ -122,12 +122,14 @@ a:focus {
 }
 
 .srow {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: stretch;
+    width: 100%;
 }
-.scell {
-    flex: 1 1 0;
+.scell, .scellp {
+    max-width: 100%;
+    width: 100%;
+}
+.scellp {
+    padding-right: 2.1rem;
 }
 .colorBox {
     min-height: 2rem;
@@ -150,13 +152,10 @@ input {
     max-width: 400px;
     margin: 0 auto;
 }
-.cfgrow {
-    display: flex;
-    flex-flow: row wrap;
-}
 .cfgcell {
-    flex: 1 1 100%;
-    margin: 0 8px 8px 8px;
+    float: left;
+    width: 100%;
+    padding: 0 8px 8px 8px;
 }
 .cfgL {
     font-size: 0.9rem;
@@ -188,8 +187,18 @@ button:disabled {
 
 /* for show / hide password buttons, fixed width is needed */
 .shb {
-    width: 5rem;
-    margin-left: 0.5rem;
+    width: 2rem;
+    margin-left: -2rem;
+    border: none;
+    background: none;
+    color: #888;
+}
+.shb:hover {
+    background: none;
+    color: #222;
+}
+.shb:focus {
+    background: none;
 }
 
 .mrgLeft {
@@ -200,13 +209,13 @@ button:disabled {
 .acenter { text-align: center; }
 .aright { text-align: right; }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
     .sidebar {
         flex: 0 0 256px;
     }
 
     .header {
-        margin: 3rem 1rem 0;
+        margin: 2rem 1rem 0;
         text-align: right;
     }
 
@@ -223,7 +232,7 @@ button:disabled {
     .config {
         max-width: 800px;
     }
-    .cfgrow {
-        flex-flow: row nowrap;
+    .cfgcell {
+        width: 50%;
     }
 }
