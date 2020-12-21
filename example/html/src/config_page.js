@@ -24,8 +24,8 @@ class ConfigPage {
                 this.addPasswordInput('Backup password', 'pap2p', '') +
             '</div>' +
             '<div class="cfgrow">' +
-                '<div class="cfgcell"><p class="cfgI" id="pversion"></p></div>' +
-                '<div class="cfgcell aright">' +
+                '<div class="cfgcell lh2"><p class="cfgI" id="pversion"></p></div>' +
+                '<div class="cfgcell lh2 aright">' +
                     '<button class="mLeft" onclick="app.GetConfig()">Reload</button>' +
                     '<button class="mLeft" onclick="app.SaveConfig()">Save</button>' +
                 '</div>' +
