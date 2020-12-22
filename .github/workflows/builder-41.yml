@@ -1,0 +1,118 @@
+name: Build with ESP-IDF v4.1
+
+on: [push]
+
+jobs:
+  builder:
+    name: Builder for pax-LampD1
+    runs-on: ubuntu-20.04
+
+    env:
+      esp-idf-ver: v4.1
+      project-name: ESP32BoardManager-Example
+      src-path: lib/ESP32/example
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          path: lib/ESP32
+
+      - name: Create the code library
+        run: |
+          mkdir -p "${{ github.workspace }}/lib/ESP32"
+          cd "${{ github.workspace }}/lib/ESP32"
+          git clone --depth 1 https://github.com/CalinRadoni/ESP32HAL.git
+          git clone --depth 1 https://github.com/CalinRadoni/ESP32SimpleOTA.git
+
+      - name: Cache the ESP-IDF
+        id: cache-esp-idf
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/esp
+            ~/.espressif
+          key: ESP-IDF_${{ env.esp-idf-ver }}_on_Ubuntu-20.04
+
+      - name: Install ESP-IDF
+        if: steps.cache-esp-idf.outputs.cache-hit != 'true'
+        uses: CalinRadoni/esp-idf-v4-action@v2
+        with:
+          esp_idf_version: ${{ env.esp-idf-ver }}
+
+      - name: Install ninja-build
+        if: steps.cache-esp-idf.outputs.cache-hit == 'true'
+        run: sudo apt-get install -y ninja-build
+
+      - name: Build
+        run: |
+          source ~/esp/esp-idf/export.sh
+          idf.py --version
+          export CodeLib_PATH="${{ github.workspace }}/lib"
+          cd "${{ github.workspace }}/${{ env.src-path }}"
+          echo -e "\n## reconfigure\n"
+          if ! idf.py reconfigure > build.log; then
+            cat build.log
+          fi
+          echo -e "\n## build\n"
+          if ! idf.py build >> build.log; then
+            cat build.log
+          fi
+
+      # - name: Create tag name
+      #   id: tag-name
+      #   run: |
+      #     # if [[ ${{ github.ref }} == "refs/heads/main" ]]; then
+      #     #   tagName="latest"
+      #     # else
+      #     #   tagName="${{ github.ref }}"
+      #     # fi
+      #     tagName="latest"
+      #     echo "::set-output name=new-tag::$tagName"
+
+      # - name: Delete previous release
+      #   uses: actions/github-script@v3
+      #   with:
+      #     github-token: ${{secrets.GITHUB_TOKEN}}
+      #     script: |
+      #       // find the release id
+      #       const response = await github.repos.getReleaseByTag({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         tag: "${{ steps.tag-name.outputs.new-tag }}"
+      #       })
+      #       // delete the release
+      #       github.repos.deleteRelease({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         release_id: response.data.id
+      #       })
+      #       // delete the tag
+      #       octokit.git.deleteRef({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         ref: "${{ steps.tag-name.outputs.new-tag }}"
+      #       })
+
+      # - name: Create a release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ steps.tag-name.outputs.new-tag }}
+      #     release_name: Release ${{ steps.tag-name.outputs.new-tag }}
+      #     draft: false
+      #     prerelease: true
+      #     body: |
+      #       This release is created by the GitHub Actions workflow
+
+      # - name: Upload the firmware
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ${{ github.workspace }}/${{ env.src-path }}/build/${{ env.project-name }}.bin
+      #     asset_name: ${{ env.project-name }}-${{ steps.tag-name.outputs.new-tag }}
+      #     asset_content_type: application/octet-stream
