@@ -8,13 +8,8 @@ set(c_PRIVATE_REQUIREMENTS
     ESP32HAL
 )
 
-set(c_REQUIREMENTS
-    Debouncer
-)
-
 idf_component_register(
     SRCS ${c_SOURCE_FILES}
     INCLUDE_DIRS "."
     PRIV_REQUIRES ${c_PRIVATE_REQUIREMENTS}
-    REQUIRES ${c_REQUIREMENTS}
 )

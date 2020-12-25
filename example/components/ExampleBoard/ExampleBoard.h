@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define ExampleBoard_H
 
 #include "Board.h"
-#include "Debouncer.h"
 #include "ExampleBoardHTTPSrv.h"
 
 /**
@@ -62,9 +61,6 @@ public:
      * @brief Turn on the output power
      */
     void PowerOff(void);
-
-    /** To be used with the onboard button */
-    Debouncer debouncer;
 
     /**
      * @brief Retuns true if the onboard button is pressed
