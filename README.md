@@ -1,5 +1,7 @@
 # Board Manager for ESP32
 
+![Build with ESP-IDF v4.1](https://github.com/CalinRadoni/ESP32BoardManager/workflows/Build%20with%20ESP-IDF%20v4.1/badge.svg)
+
 Each board based on ESP32 needs some standard steps for initialization and usage.
 With the included `example` this is a *Getting started* code that can be used for any board.
 It has:
