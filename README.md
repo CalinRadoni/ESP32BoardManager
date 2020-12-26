@@ -32,8 +32,8 @@ The provided **example** is a working implementation that can be used as *Gettin
 
 This is the current web interface:
 
-![web interface portrait](assets/webp.png)
-![web interface landscape](assets/webl.png)
+![web interface portrait](doc/assets/webp.png)
+![web interface landscape](doc/assets/webl.png)
 
 The web server pages are in `html/web/index.html.gz`, which is generated using the `html/build.sh` script.
 
