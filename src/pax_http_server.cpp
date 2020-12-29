@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <cstring>
 
+#include "sdkconfig.h"
 #include "pax_http_server.h"
 #include "Configuration.h"
 #include "cJSON.h"
@@ -35,8 +36,18 @@ static const char* TAG = "PaxHttpSrv";
 
 const uint8_t queueLength = 8;
 
+#ifdef CONFIG_ESP32BM_WEB_Compressed_index
 extern const uint8_t index_html_gz_start[] asm("_binary_index_html_gz_start");
 extern const uint8_t index_html_gz_end[]   asm("_binary_index_html_gz_end");
+#else
+extern const uint8_t index_html_start[] asm("_binary_index_html_start");
+extern const uint8_t index_html_end[]   asm("_binary_index_html_end");
+#endif
+
+#ifdef CONFIG_ESP32BM_WEB_USE_favicon
+extern const uint8_t index_html_start[] asm("_binary_favicon_ico_start");
+extern const uint8_t index_html_end[]   asm("_binary_favicon_ico_end");
+#endif
 
 // -----------------------------------------------------------------------------
 
@@ -206,11 +217,24 @@ esp_err_t PaxHttpServer::HandleGetRequest(httpd_req_t* req)
         esp_err_t res = httpd_resp_set_type(req, HTTPD_TYPE_TEXT);
         if (res != ESP_OK) return res;
 
+    #ifdef CONFIG_ESP32BM_WEB_Compressed_index
         res = httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
         if (res != ESP_OK) return res;
 
         return httpd_resp_send(req, (const char *)index_html_gz_start, index_html_gz_end - index_html_gz_start);
+    #else
+        return httpd_resp_send(req, (const char *)index_html_start, index_html_end - index_html_start);
+    #endif
     }
+
+    #ifdef CONFIG_ESP32BM_WEB_USE_favicon
+    if (str == "/favicon.ico"){
+        esp_err_t res = httpd_resp_set_type(req, "image/x-icon");
+        if (res != ESP_OK) return res;
+
+        return httpd_resp_send(req, (const char *)index_html_start, index_html_end - index_html_start);
+    }
+    #endif
 
     httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "404 :)");
     return ESP_FAIL;

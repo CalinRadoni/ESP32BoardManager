@@ -7,3 +7,4 @@
 # from the web directory, only the index.html.gz is needed
 /web/*
 !/web/index.html.gz
+!/web/favicon.ico

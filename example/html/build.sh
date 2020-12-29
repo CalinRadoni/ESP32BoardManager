@@ -3,7 +3,7 @@
 set -e
 
 script_name="HTML Builder"
-script_version="1.4.1"
+script_version="1.5.0"
 
 tmpDir="tmp"
 webDir="web"
@@ -74,6 +74,10 @@ function MinimizeCSS () {
   ./node_modules/.bin/cleancss -o ./${tmpDir}/style.css ./${tmpDir}/style_src.css
 }
 
+function CopyImages () {
+  find src -maxdepth 1 -type f \( -name '*.ico' -o -name '*.png' -o -name '*.jpg' \) -exec cp {} ./${webDir}/ \;
+}
+
 function BuildHTML () {
   ./node_modules/.bin/inline-source --root ./${tmpDir} ./src/index.html ./${webDir}/index.html
 }
@@ -128,10 +132,12 @@ if [[ $production_mode -eq 1 ]]; then
   MinimizeJS
   BuildCSS
   MinimizeCSS
+  CopyImages
   BuildHTML_Prod
 else
   BuildJS
   BuildCSS
+  CopyImages
   BuildHTML
 fi
 

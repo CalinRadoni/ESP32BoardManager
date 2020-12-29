@@ -20,9 +20,15 @@ set(c_REQUIREMENTS
     ESP32SimpleOTA
 )
 
-set(c_EMBED_FILES
-    "${CMAKE_SOURCE_DIR}/html/web/index.html.gz"
-)
+if(CONFIG_ESP32BM_WEB_Compressed_index)
+    set(c_EMBED_FILES "${CMAKE_SOURCE_DIR}/html/web/index.html.gz")
+else()
+    set(c_EMBED_FILES "${CMAKE_SOURCE_DIR}/html/web/index.html")
+endif()
+
+if(CONFIG_ESP32BM_WEB_USE_favicon)
+    list(APPEND c_EMBED_FILES "${CMAKE_SOURCE_DIR}/html/web/favicon.ico")
+endif()
 
 idf_component_register(
     SRCS ${c_SOURCE_FILES}

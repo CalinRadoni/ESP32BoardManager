@@ -1,0 +1,15 @@
+menu "ESP32 Board Manager"
+
+    config ESP32BM_WEB_Compressed_index
+        bool "Use index.html.gz"
+        default y
+        help
+            This enables the usage of index.html.gz file. If this is not set, index.html will be used.
+
+    config ESP32BM_WEB_USE_favicon
+        bool "Use favicon.ico"
+        default y
+        help
+            This enables the usage of favicon.ico file.
+
+endmenu

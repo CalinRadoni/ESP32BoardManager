@@ -35,6 +35,24 @@ This is the current web interface:
 ![web interface portrait](doc/assets/webp.png)
 ![web interface landscape](doc/assets/webl.png)
 
+**Minimal web interface**
+
+Use `idf.py menuconfig` and go to `Component config -> ESP32 Board Manager` to uncheck:
+
+- Use index.html.gz
+- Use favicon.ico
+
+This minimal web interface needs the `html/web/index.html` file.
+
+**Note:** you can also set these in `sdkconfig.defaults`:
+
+```ini
+CONFIG_ESP32BM_WEB_Compressed_index=n
+CONFIG_ESP32BM_WEB_USE_favicon=n
+```
+
+**Standard web interface**
+
 The web server pages are in `html/web/index.html.gz`, which is generated using the `html/build.sh` script.
 
 The script needs [Node.js](https://nodejs.org) and a few other packages like:
@@ -46,7 +64,7 @@ The script needs [Node.js](https://nodejs.org) and a few other packages like:
 - -p build in production mode
 - -n help for Node.js, npm and npm modules
 
-See [Embedded website workflow - bash](https://calinradoni.github.io/pages/200913-embedded-website-bash.html) for more information.
+See [Embedded website workflow - bash](https://calinradoni.github.io/pages/200913-embedded-website-bash.html) for information about installation and usage of Node.js and required packages.
 
 ## Tests
 
