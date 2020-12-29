@@ -32,8 +32,8 @@ The provided **example** is a working implementation that can be used as *Gettin
 
 This is the current web interface:
 
-![web interface portrait](doc/assets/webp.png)
-![web interface landscape](doc/assets/webl.png)
+![web interface portrait](docs/assets/webp.png)
+![web interface landscape](docs/assets/webl.png)
 
 **Minimal web interface**
 
