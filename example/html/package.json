@@ -1,8 +1,8 @@
 {
-  "name": "pax-LampD1",
+  "name": "example-web-ui",
   "version": "1.1.0",
-  "description": "Builder for the web site embedded in the firmware of the pax-LampD1 device",
-  "homepage": "https://github.com/CalinRadoni/pax-LampD1",
+  "description": "Builder for the example web site embedded in the firmware of a ESP32 device",
+  "homepage": "https://github.com/CalinRadoni/ESP32BoardManager",
   "private": true,
   "keywords": [],
   "author": {
@@ -12,11 +12,11 @@
   "license": "GPL-3.0-only",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CalinRadoni/pax-LampD1.git",
-    "directory": "SW/html"
+    "url": "https://github.com/CalinRadoni/ESP32BoardManager.git",
+    "directory": "example/html"
   },
   "scripts": {
-    "test": "echo Use the build script build.sh or 'build' and 'build-prod' commands",
+    "test": "echo Use the build script, build.sh, or 'build' and 'build-prod' commands",
     "build": "./build.sh",
     "build-prod": "./build.sh -pk"
   },
