@@ -38,7 +38,7 @@ class App {
         let appel = document.getElementById('APP');
         homePage.set_parent_div(appel);
         configPage.set_parent_div(appel);
-        firmwarePage.set_parent_div(appel);
+        systemPage.set_parent_div(appel);
 
         this.GetInfo();
         this.GetConfig();
@@ -145,7 +145,7 @@ class App {
     }
 
     UpFW() {
-        let f = firmwarePage.GetSelectedFile();
+        let f = systemPage.GetSelectedFile();
         if (f == null) return;
 
         let xhr = new XMLHttpRequest();
@@ -157,18 +157,18 @@ class App {
                 else {
                     logger.error(xhr.status + " " + xhr.responseText);
                 }
-                firmwarePage.EndUpload();
+                systemPage.EndUpload();
             }
         };
 
         xhr.upload.addEventListener("progress", function(ev) {
             if (ev.lengthComputable) {
                 let percent = 100 * ev.loaded / ev.total | 0;
-                firmwarePage.SetUploadProgress(percent);
+                systemPage.SetUploadProgress(percent);
             }
         });
 
-        firmwarePage.BeginUpload();
+        systemPage.BeginUpload();
 
         xhr.open("POST", "/update", true);
         xhr.send(f);
@@ -199,8 +199,8 @@ class App {
             return;
         }
 
-        if (location.hash === "#firmware") {
-            firmwarePage.render();
+        if (location.hash === "#system") {
+            systemPage.render();
             return;
         }
 

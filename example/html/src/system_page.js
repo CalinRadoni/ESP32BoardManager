@@ -1,4 +1,4 @@
-class FirmwarePage {
+class SystemPage {
     constructor() {
         this.pdiv = null;
     }
@@ -9,17 +9,21 @@ class FirmwarePage {
     render() {
         if (!this.pdiv) return;
 
-        let xstr = '';
+        let s = '<h3>Load firmware from file</h3>' +
+            '<div class="srow mTop">' +
+                '<input type="file" id="fwf" accept=".bin" style="display:none" onchange="systemPage.SelectFW()" />' +
+                '<button id="fwbs" onclick="systemPage.ClickFW()">Select firmware file</button>' +
+                '<span class="mTop dBlock" id="swf"></span>' +
+            '</div>' +
+            '<div class="srow mTop">' +
+                '<button id="fwbu" onclick="app.UpFW()" disabled>Upload firmware</button>' +
+                '<span class="mTop dBlock" id="swi"></span>' +
+            '</div>' +
+            '<div class="srow mTop">' +
+                '<button id="fwbr" onclick="app.ResetBoard()" disabled>Reset</button>' +
+            '</div>';
 
-        xstr = xstr + '<h3>Firmware</h3>';
-        xstr = xstr + '<input type="file" id="fwf" accept=".bin" style="display:none" onchange="firmwarePage.SelectFW()" />';
-        xstr = xstr + '<button id="fwbs" onclick="firmwarePage.ClickFW()">Select firmware file</button>';
-        xstr = xstr + '<span class="mLeft" id="swf"></span><br/><br/>';
-        xstr = xstr + '<button id="fwbu" onclick="app.UpFW()" disabled>Upload firmware</button>';
-        xstr = xstr + '<span class="mLeft" id="swi"></span><br/><br/>';
-        xstr = xstr + '<button id="fwbr" onclick="app.ResetBoard()" disabled>Reset</button>';
-
-        this.pdiv.innerHTML = xstr;
+        this.pdiv.innerHTML = s;
     }
 
     ClickFW() {
@@ -39,7 +43,7 @@ class FirmwarePage {
 
         let d = document.getElementById('swf');
         if (d != null) {
-            d.innerHTML = f.name + ", size: " + f.size + " bytes";
+            d.innerHTML = f.name;
         }
     }
 
@@ -76,4 +80,4 @@ class FirmwarePage {
         e.innerHTML = val + "%";
     }
 }
-var firmwarePage = new FirmwarePage();
+var systemPage = new SystemPage();

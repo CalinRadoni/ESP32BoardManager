@@ -209,6 +209,8 @@ button:disabled {
 .acenter { text-align: center; }
 .aright  { text-align: right; }
 
+.dBlock { display: block; }
+
 .lh2 { line-height: 2rem; }
 
 @media (min-width: 640px) {
