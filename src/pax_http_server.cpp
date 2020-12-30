@@ -205,6 +205,10 @@ esp_err_t PaxHttpServer::HandleGetRequest(httpd_req_t* req)
 
     std::string str = req->uri;
 
+    if (str == "/info.json") {
+        return HandleGet_InfoJson(req);
+    }
+
     if (str == "/status.json") {
         return HandleGet_StatusJson(req);
     }
@@ -251,6 +255,35 @@ esp_err_t PaxHttpServer::SetJsonHeader(httpd_req_t* req)
     return httpd_resp_set_hdr(req, "Pragma", "no-cache");
 }
 
+// -----------------------------------------------------------------------------
+
+char* PaxHttpServer::CreateJSONInfoString(bool addWhitespaces)
+{
+    return nullptr;
+}
+
+esp_err_t PaxHttpServer::HandleGet_InfoJson(httpd_req_t* req)
+{
+    char *str = CreateJSONInfoString(true);
+    if (str == nullptr) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "info.json");
+        return ESP_FAIL;
+    }
+
+    esp_err_t res = SetJsonHeader(req);
+    if(res != ESP_OK) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "info.json");
+        free(str);
+        return res;
+    }
+
+    res = httpd_resp_sendstr(req, str);
+    free(str);
+    return res;
+}
+
+// -----------------------------------------------------------------------------
+
 char* PaxHttpServer::CreateJSONStatusString(bool addWhitespaces)
 {
     return nullptr;
@@ -276,6 +309,8 @@ esp_err_t PaxHttpServer::HandleGet_StatusJson(httpd_req_t* req)
     return res;
 }
 
+// -----------------------------------------------------------------------------
+
 esp_err_t PaxHttpServer::HandleGet_ConfigJson(httpd_req_t* req)
 {
     if (configuration == nullptr) {
@@ -300,6 +335,8 @@ esp_err_t PaxHttpServer::HandleGet_ConfigJson(httpd_req_t* req)
     free(str);
     return res;
 }
+
+// -----------------------------------------------------------------------------
 
 esp_err_t PaxHttpServer::HandlePostRequest(httpd_req_t* req)
 {

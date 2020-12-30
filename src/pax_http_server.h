@@ -87,6 +87,7 @@ protected:
     esp_err_t HandlePostRequest(httpd_req_t*);
 
     virtual esp_err_t SetJsonHeader(httpd_req_t*);
+    virtual esp_err_t HandleGet_InfoJson(httpd_req_t*);
     virtual esp_err_t HandleGet_StatusJson(httpd_req_t*);
     virtual esp_err_t HandleGet_ConfigJson(httpd_req_t*);
 
@@ -97,6 +98,11 @@ protected:
     esp_err_t HandleOTA(httpd_req_t*);
 
     Configuration* configuration;
+
+    /**
+     * @warning Delete returned string with 'free' !
+     */
+    virtual char* CreateJSONInfoString(bool addWhitespaces);
 
     /**
      * @warning Delete returned string with 'free' !

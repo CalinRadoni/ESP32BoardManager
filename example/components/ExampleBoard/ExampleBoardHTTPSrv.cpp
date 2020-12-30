@@ -40,7 +40,7 @@ ExampleBoardHTTPSrv::~ExampleBoardHTTPSrv(void)
 
 // -----------------------------------------------------------------------------
 
-char* ExampleBoardHTTPSrv::CreateJSONStatusString(bool addWhitespaces)
+char* ExampleBoardHTTPSrv::CreateJSONInfoString(bool addWhitespaces)
 {
     char *str = nullptr;
 
@@ -64,4 +64,11 @@ char* ExampleBoardHTTPSrv::CreateJSONStatusString(bool addWhitespaces)
 
     cJSON_Delete(cfg);
     return str;
+}
+
+// -----------------------------------------------------------------------------
+
+char* ExampleBoardHTTPSrv::CreateJSONStatusString(bool addWhitespaces)
+{
+    return nullptr;
 }

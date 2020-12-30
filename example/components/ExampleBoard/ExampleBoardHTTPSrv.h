@@ -34,6 +34,11 @@ protected:
     /**
      * @warning Delete returned string with 'free' !
      */
+    virtual char* CreateJSONInfoString(bool addWhitespaces);
+
+    /**
+     * @warning Delete returned string with 'free' !
+     */
     virtual char* CreateJSONStatusString(bool addWhitespaces);
 };
 

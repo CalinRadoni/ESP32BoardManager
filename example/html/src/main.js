@@ -89,6 +89,19 @@ class App {
                 }
             }
         };
+        xhr.open("GET", "/info.json", true);
+        xhr.send();
+    }
+
+    GetStatus() {
+        let xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+            if (xhr.readyState === xhr.DONE) {
+                if (xhr.status === 200) {
+                    // do something with the response
+                }
+            }
+        };
         xhr.open("GET", "/status.json", true);
         xhr.send();
     }
