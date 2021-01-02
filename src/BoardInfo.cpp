@@ -1,7 +1,7 @@
 /**
 This file is part of ESP32BoardManager esp-idf component
 (https://github.com/CalinRadoni/ESP32BoardManager)
-Copyright (C) 2020 by Calin Radoni
+Copyright (C) 2021 by Calin Radoni
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
