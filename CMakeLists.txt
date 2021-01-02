@@ -1,5 +1,6 @@
 set(c_SOURCE_FILES
     "src/Board.cpp"
+    "src/BoardInfo.cpp"
     "src/Configuration.cpp"
     "src/Events.cpp"
     "src/pax_http_server.cpp"

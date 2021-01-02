@@ -17,22 +17,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ExampleBoardHTTPSrv_H
-#define ExampleBoardHTTPSrv_H
+#include "BoardInfo.h"
 
-#include "pax_http_server.h"
+// -----------------------------------------------------------------------------
 
-class ExampleBoardHTTPSrv : public PaxHttpServer
+BoardInfo::BoardInfo(void)
 {
-public:
-    ExampleBoardHTTPSrv(void);
-    virtual ~ExampleBoardHTTPSrv();
+    //
+}
 
-protected:
-    /**
-     * @warning Delete returned string with 'free' !
-     */
-    virtual char* CreateJSONStatusString(bool addWhitespaces);
-};
+BoardInfo::~BoardInfo()
+{
+    //
+}
 
-#endif
+// -----------------------------------------------------------------------------

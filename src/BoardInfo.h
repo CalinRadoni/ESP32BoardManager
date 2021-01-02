@@ -17,22 +17,29 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ExampleBoardHTTPSrv_H
-#define ExampleBoardHTTPSrv_H
+#ifndef BoardInfo_H
+#define BoardInfo_H
 
-#include "pax_http_server.h"
+#include "freertos/FreeRTOS.h"
 
-class ExampleBoardHTTPSrv : public PaxHttpServer
+#include <string>
+
+class BoardInfo
 {
 public:
-    ExampleBoardHTTPSrv(void);
-    virtual ~ExampleBoardHTTPSrv();
+    BoardInfo(void);
+    virtual ~BoardInfo();
 
-protected:
-    /**
-     * @warning Delete returned string with 'free' !
-     */
-    virtual char* CreateJSONStatusString(bool addWhitespaces);
+    std::string tagline;
+    std::string link;
+
+    std::string appName;
+    std::string appVersion;
+    std::string compileTime;
+    std::string idfVersion;
+    std::string elfSHA256;
+
+    std::string hwInfo;
 };
 
 #endif

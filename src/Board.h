@@ -24,14 +24,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "BoardEvents.h"
 #include "pax_http_server.h"
 #include "WiFiManager.h"
+#include "BoardInfo.h"
 
 #include "esp32_hal_cpu.h"
 #include "esp32_hal_gpio.h"
 #include "esp32_hal_adc.h"
 #include "esp32_hal_i2c.h"
 #include "esp32_hal_spi.h"
-
-// TODO: In the Board class add functions for reading ALL board related data, default_mac, chip_info_ app_info, ...
 
 class Board
 {
@@ -124,14 +123,11 @@ protected:
     Configuration *configuration;
     esp32hal::CPU cpu;
 
+    BoardInfo boardInfo;
+    void SetBoardInfo(void);
+
     bool initialized;
     bool netInitialized;
-
-    std::string appName;
-    std::string appVersion;
-    std::string compileTime;
-    std::string idfVersion;
-    std::string elfSHA256;
 
     /**
      * @brief Placeholder for base MAC address

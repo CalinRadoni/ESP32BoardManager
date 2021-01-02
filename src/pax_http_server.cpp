@@ -117,7 +117,7 @@ void PaxHttpServer::DestroyQueue(void)
     serverQueue = 0;
 }
 
-esp_err_t PaxHttpServer::StartServer(ESP32SimpleOTA* sOTA, Configuration* boardConfiguration)
+esp_err_t PaxHttpServer::StartServer(ESP32SimpleOTA *sOTA, Configuration *boardConfiguration, BoardInfo *boardInfoIn)
 {
     if (serverHandle != nullptr)
         StopServer();
@@ -131,6 +131,12 @@ esp_err_t PaxHttpServer::StartServer(ESP32SimpleOTA* sOTA, Configuration* boardC
     configuration = boardConfiguration;
     if (configuration == nullptr) {
         ESP_LOGE(TAG, "configuration is nullptr");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    boardInfo = boardInfoIn;
+    if (boardInfo == nullptr) {
+        ESP_LOGE(TAG, "boardInfo is nullptr");
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -259,7 +265,56 @@ esp_err_t PaxHttpServer::SetJsonHeader(httpd_req_t* req)
 
 char* PaxHttpServer::CreateJSONInfoString(bool addWhitespaces)
 {
-    return nullptr;
+    char *str = nullptr;
+
+    if (configuration == nullptr) { return str; }
+    if (boardInfo == nullptr) { return str; }
+
+    cJSON *cfg = cJSON_CreateObject();
+
+    if (cJSON_AddStringToObject(cfg, "title", configuration->name.c_str()) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+    if (cJSON_AddStringToObject(cfg, "tagline", boardInfo->tagline.c_str()) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+
+    if (cJSON_AddStringToObject(cfg, "appName", boardInfo->appName.c_str()) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+    if (cJSON_AddStringToObject(cfg, "appVersion", boardInfo->appVersion.c_str()) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+    if (cJSON_AddStringToObject(cfg, "link", boardInfo->link.c_str()) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+    if (cJSON_AddStringToObject(cfg, "compileTime", boardInfo->compileTime.c_str()) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+    if (cJSON_AddStringToObject(cfg, "idfVersion", boardInfo->idfVersion.c_str()) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+    if (cJSON_AddStringToObject(cfg, "elfSHA256", boardInfo->elfSHA256.c_str()) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+    if (cJSON_AddStringToObject(cfg, "hwInfo", boardInfo->hwInfo.c_str()) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+
+    if (addWhitespaces) { str = cJSON_Print(cfg); }
+    else                { str = cJSON_PrintUnformatted(cfg); }
+
+    cJSON_Delete(cfg);
+    return str;
 }
 
 esp_err_t PaxHttpServer::HandleGet_InfoJson(httpd_req_t* req)

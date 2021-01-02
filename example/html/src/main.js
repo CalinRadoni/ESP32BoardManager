@@ -1,36 +1,27 @@
 class App {
     constructor(logger) {
-        this.InitInfo();
-    }
-
-    InitInfo() {
-        this.title = '';
-        this.tagline = '';
+        //
     }
 
     InfoFromString(jStr) {
-        let cfg = JSON.parse(jStr);
-
-        if (cfg.hasOwnProperty('title'))
-            this.title = cfg.title;
-        if (cfg.hasOwnProperty('tagline'))
-            this.tagline = cfg.tagline;
-
+        this.boardInfo.setFromString(jStr);
         this.toPage();
+        systemPage.updateInfo();
     }
 
     toPage() {
-        let a = null;
+        document.title = this.boardInfo.get('title');
 
-        a = document.getElementById('title');
+        let a = document.getElementById('title');
         if (a !== null)
-            a.innerHTML = this.title;
+            a.innerHTML = this.boardInfo.get('title');
 
         a = document.getElementById('tagline');
-        if (a !== null)
-            a.innerHTML = this.tagline;
+        if (a !== null) {
+            a.innerHTML = this.boardInfo.get('tagline');
+            a.hidden = (a.innerHTML.length > 0);
+        }
     }
-
 
     Initialize() {
         logger.set_parent_div(document.getElementById('LOG'));
@@ -39,6 +30,9 @@ class App {
         homePage.set_parent_div(appel);
         configPage.set_parent_div(appel);
         systemPage.set_parent_div(appel);
+
+        this.boardInfo = boardInfo;
+        systemPage.set_info_object(boardInfo);
 
         this.GetInfo();
         this.GetConfig();
@@ -213,5 +207,6 @@ var logger = new Logger();
 var homePage = new HomePage();
 var configuration = new Configuration();
 var configPage = new ConfigPage();
+var boardInfo = new BoardInfo();
 var app = new App();
 app.Initialize();

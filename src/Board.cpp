@@ -139,6 +139,7 @@ esp_err_t Board::Initialize(void)
         return err;
     }
 
+    // set WiFi power mode to WIFI_PS_NONE, otherwise it will not respond to ARP requests !
     wifi_ps_type_t psType = WIFI_PS_MIN_MODEM;
     err = esp_wifi_get_ps(&psType);
     if (err != ESP_OK) {
@@ -155,32 +156,7 @@ esp_err_t Board::Initialize(void)
         }
     }
 
-    const esp_app_desc_t *appDescription;
-    appDescription = esp_ota_get_app_description();
-    if (appDescription->magic_word != 0xabcd5432) {
-        ESP_LOGE(TAG, "esp_ota_get_app_description");
-    }
-    else {
-        appName = appDescription->project_name;
-        appVersion = appDescription->version;
-        compileTime = appDescription->date;
-        compileTime += ' ';
-        compileTime += appDescription->time;
-        idfVersion = appDescription->idf_ver;
-        ESP_LOGI(TAG, "%s %s compiled with ESP_IDF %s on %s",
-            appName.c_str(), appVersion.c_str(), idfVersion.c_str(), compileTime.c_str());
-
-        const char hex[17] = "0123456789abcdef";
-        const uint8_t *sha256 = appDescription->app_elf_sha256;
-        elfSHA256.clear();
-        elfSHA256.reserve(64);
-        for (uint8_t i = 32; i > 0; --i) {
-            elfSHA256 += hex[(*sha256 >> 4) & 0x0F];
-            elfSHA256 += hex[*sha256 & 0x0F];
-            ++sha256;
-        }
-        ESP_LOGI(TAG, "SHA256 of elf file: %s", elfSHA256.c_str());
-    }
+    SetBoardInfo();
 
     err = PostInit();
     if (err != ESP_OK) {
@@ -190,6 +166,75 @@ esp_err_t Board::Initialize(void)
 
     initialized = true;
     return ESP_OK;
+}
+
+void Board::SetBoardInfo(void)
+{
+    const esp_app_desc_t *appDescription;
+    appDescription = esp_ota_get_app_description();
+    if (appDescription->magic_word != 0xabcd5432) {
+        ESP_LOGE(TAG, "esp_ota_get_app_description");
+    }
+    else {
+        boardInfo.appName = appDescription->project_name;
+        boardInfo.appVersion = appDescription->version;
+        boardInfo.compileTime = appDescription->date;
+        boardInfo.compileTime += ' ';
+        boardInfo.compileTime += appDescription->time;
+        boardInfo.idfVersion = appDescription->idf_ver;
+        ESP_LOGI(TAG, "%s %s compiled with ESP_IDF %s on %s",
+            boardInfo.appName.c_str(), boardInfo.appVersion.c_str(),
+            boardInfo.idfVersion.c_str(), boardInfo.compileTime.c_str());
+
+        const char hex[17] = "0123456789abcdef";
+        const uint8_t *sha256 = appDescription->app_elf_sha256;
+        boardInfo.elfSHA256.clear();
+        boardInfo.elfSHA256.reserve(64);
+        for (uint8_t i = 32; i > 0; --i) {
+            boardInfo.elfSHA256 += hex[(*sha256 >> 4) & 0x0F];
+            boardInfo.elfSHA256 += hex[*sha256 & 0x0F];
+            ++sha256;
+        }
+        ESP_LOGI(TAG, "SHA256 of elf file: %s", boardInfo.elfSHA256.c_str());
+    }
+
+    boardInfo.link = "https://github.com/CalinRadoni/ESP32BoardManager";
+    boardInfo.tagline = "";
+
+    std::string formatString;
+    int size;
+
+    // create a string for processor type
+    boardInfo.hwInfo = cpu.chipModel;
+    if (cpu.numberOfCores == 1) {
+        boardInfo.hwInfo += " single-core";
+    }
+    else {
+        if (cpu.numberOfCores == 2) {
+            boardInfo.hwInfo += " dual-core";
+        }
+        else {
+            boardInfo.hwInfo += " with ";
+            formatString = " with %d cores";
+            size = std::snprintf(nullptr, 0, formatString.c_str(), cpu.numberOfCores);
+            if (size > 0){
+                std::vector<char> bc(size + 1);
+                std::snprintf(bc.data(), bc.size(), formatString.c_str(), cpu.numberOfCores);
+                boardInfo.hwInfo += bc.data();
+            }
+            else { ESP_LOGE(TAG, "snprintf hwInfo"); }
+        }
+    }
+
+    // add memory info
+    formatString = ", Flash chip ID 0x%x, size %dMB";
+    size = std::snprintf(nullptr, 0, formatString.c_str(), cpu.espFlashID, cpu.espFlashSize / (1024 * 1024));
+    if (size > 0) {
+        std::vector<char> buffer(size + 1);
+        std::snprintf(buffer.data(), buffer.size(), formatString.c_str(), cpu.espFlashID, cpu.espFlashSize / (1024 * 1024));
+        boardInfo.hwInfo += buffer.data();
+    }
+    else { ESP_LOGE(TAG, "snprintf hwInfo"); }
 }
 
 void Board::DoNothingForever(void)

@@ -3,13 +3,24 @@ class SystemPage {
         this.pdiv = null;
     }
 
+    set_info_object(bi) {
+        this.boardInfo = bi;
+    }
+
     set_parent_div(parentDiv) {
         this.pdiv = parentDiv;
     }
     render() {
         if (!this.pdiv) return;
 
-        let s = '<h3>Load firmware from file</h3>' +
+        let s = '<h3>System information</h3>' +
+            '<div class="srow mTop">' +
+                '<p id="appinfo"></p>' +
+                '<p id="shainfo"></p>' +
+                '<p id="sysinfo"></p>' +
+            '</div>';
+
+        s = s + '<h3>Load firmware from file</h3>' +
             '<div class="srow mTop">' +
                 '<input type="file" id="fwf" accept=".bin" style="display:none" onchange="systemPage.SelectFW()" />' +
                 '<button id="fwbs" onclick="systemPage.ClickFW()">Select firmware file</button>' +
@@ -24,6 +35,35 @@ class SystemPage {
             '</div>';
 
         this.pdiv.innerHTML = s;
+
+        this.updateInfo();
+    }
+
+    updateInfo() {
+        let a = document.getElementById('appinfo');
+        if (a != null) {
+            let link = this.boardInfo.get('link');
+            let s = '';
+            if (link.length > 0) {
+                s = '<a href="' + this.boardInfo.get('link') + '">' + this.boardInfo.get('appName') + '</a>';
+            }
+            else {
+                s = this.boardInfo.get('appName');
+            }
+            s = s + ' ' + this.boardInfo.get('appVersion') +
+                ' compiled with ESP-IDF ' + this.boardInfo.get('idfVersion') +
+                ' on ' + this.boardInfo.get('compileTime');
+
+            a.innerHTML = s;
+        }
+
+        a = document.getElementById('shainfo');
+        if (a != null)
+            a.innerHTML = 'SHA256 of the elf file is: ' + this.boardInfo.get('elfSHA256');
+
+        a = document.getElementById('sysinfo');
+        if (a != null)
+            a.innerHTML = this.boardInfo.get('hwInfo');
     }
 
     ClickFW() {

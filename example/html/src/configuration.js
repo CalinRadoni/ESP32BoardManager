@@ -1,5 +1,6 @@
 const configNames = ['version', 'name', 'pass', 'ap1s', 'ap1p', 'ap2s', 'ap2p', 'ipAddr', 'ipMask', 'ipGateway', 'ipDNS'];
 const configVersion = 3;
+const elemPrefix = 'p';
 class Configuration {
     constructor() {
         this.initialize();
@@ -27,7 +28,7 @@ class Configuration {
 
     toPage() {
         for (const [key, value] of Object.entries(this)) {
-            let a = document.getElementById('p' + key);
+            let a = document.getElementById(elemPrefix + key);
             if (a !== null) {
                 if (key === 'version') {
                     a.innerHTML = 'Configuration version ' + value;
@@ -41,7 +42,7 @@ class Configuration {
 
     fromPagetoString() {
         for (const key of Object.keys(this)) {
-            let a = document.getElementById('p' + key);
+            let a = document.getElementById(elemPrefix + key);
             if (a !== null) {
                 if (key === 'version') {
                     this.version = this.myVersion;

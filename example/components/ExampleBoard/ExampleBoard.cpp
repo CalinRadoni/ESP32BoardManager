@@ -107,7 +107,7 @@ esp_err_t ExampleBoard::PostInit(void)
         return ESP_FAIL;
     }
     else {
-        res = httpServer.StartServer(&simpleOTA, configuration);
+        res = httpServer.StartServer(&simpleOTA, configuration, &boardInfo);
         if (res != ESP_OK) {
             ESP_LOGE(TAG, "0x%x Failed to start the HTTP server !", res);
             return res;
@@ -116,9 +116,6 @@ esp_err_t ExampleBoard::PostInit(void)
             ESP_LOGI(TAG, "HTTP Server started");
         }
     }
-    httpServer.tagline = appName;
-    httpServer.tagline += ' ';
-    httpServer.tagline += appVersion;
 
     res = InitializeMDNS();
     if (res != ESP_OK) {

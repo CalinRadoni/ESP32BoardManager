@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ESP32SimpleOTA.h"
 #include "Configuration.h"
+#include "BoardInfo.h"
 
 struct HTTPCommand
 {
@@ -59,7 +60,7 @@ public:
      */
     QueueHandle_t GetQueueHandle(void);
 
-    esp_err_t StartServer(ESP32SimpleOTA*, Configuration*);
+    esp_err_t StartServer(ESP32SimpleOTA*, Configuration*, BoardInfo*);
     void StopServer(void);
 
     esp_err_t HandleRequest(httpd_req_t*);
@@ -94,10 +95,12 @@ protected:
     virtual esp_err_t HandlePost_CmdJson(httpd_req_t*);
     virtual esp_err_t HandlePost_ConfigJson(httpd_req_t*);
 
-    ESP32SimpleOTA* simpleOTA;
+    ESP32SimpleOTA *simpleOTA;
     esp_err_t HandleOTA(httpd_req_t*);
 
-    Configuration* configuration;
+    Configuration *configuration;
+
+    BoardInfo *boardInfo;
 
     /**
      * @warning Delete returned string with 'free' !
