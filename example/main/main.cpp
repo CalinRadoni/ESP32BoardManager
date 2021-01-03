@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 const char* TAG = "main.cpp";
 
 ExampleBoard board;
+bool stationMode;
 
 static TaskHandle_t xHTTPHandlerTask = NULL;
 static TaskHandle_t xLoopTask = NULL;
@@ -42,6 +43,21 @@ extern "C" {
                 ESP_LOGI(TAG, "Received command %d with data 0x%x", cmd.command, cmd.data);
                 cmd.command = 0;
                 cmd.data = 0;
+            }
+
+            if (stationMode) {
+                if (!board.IsConnectedToAP()) {
+                    // the board has lost the WiFi connectivity
+                    board.StopTheServers();
+                    if (board.RestartStationMode(3) == ESP_OK) {
+                        board.StartTheServers();
+                        board.ConfigureMDNS();
+                    }
+                    else {
+                        // failed to connect to WiFi, wait two minutes
+                        vTaskDelay(120000 / portTICK_PERIOD_MS);
+                    }
+                }
             }
 
             vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -78,6 +94,8 @@ extern "C" {
             board.DoNothingForever();
         }
         ESP_LOGI(TAG, "Board initialized OK");
+
+        stationMode = board.IsConnectedToAP();
 
         xTaskCreate(HTTPTask, "HTTP command handling task", 2048, NULL, uxTaskPriorityGet(NULL) + 1, &xHTTPHandlerTask);
         if (xHTTPHandlerTask != NULL) {
