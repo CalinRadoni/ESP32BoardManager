@@ -84,9 +84,7 @@ esp_err_t ExampleBoard::BoardInit(void)
 
 esp_err_t ExampleBoard::PostInit(void)
 {
-    esp_err_t res;
-
-    res = StartStation();
+    esp_err_t res = StartStation(3);
     if (res != ESP_OK) {
         // failed to connect to an AP
         ESP_LOGW(TAG, "0x%x Failed to connect to an AP", res);
@@ -103,26 +101,42 @@ esp_err_t ExampleBoard::PostInit(void)
         ESP_LOGI(TAG, "Started in Station mode");
     }
 
+    res = InitializeMDNS();
+    if (res != ESP_OK) return res;
+
+    res = StartTheServers();
+    if (res != ESP_OK) return res;
+
+    res = ConfigureMDNS();
+    if (res != ESP_OK) return res;
+
+    return res;
+}
+
+esp_err_t ExampleBoard::StartTheServers(void)
+{
     if (!httpServer.Initialize()) {
         return ESP_FAIL;
     }
-    else {
-        res = httpServer.StartServer(&simpleOTA, configuration, &boardInfo);
-        if (res != ESP_OK) {
-            ESP_LOGE(TAG, "0x%x Failed to start the HTTP server !", res);
-            return res;
-        }
-        else {
-            ESP_LOGI(TAG, "HTTP Server started");
-        }
-    }
 
-    res = InitializeMDNS();
+    esp_err_t res = httpServer.StartServer(&simpleOTA, configuration, &boardInfo);
     if (res != ESP_OK) {
+        ESP_LOGE(TAG, "0x%x Failed to start the HTTP server !", res);
         return res;
     }
+    ESP_LOGI(TAG, "HTTP Server started");
 
-    res = mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0);
+    return ESP_OK;
+}
+
+void ExampleBoard::StopTheServers(void)
+{
+    httpServer.StopServer();
+}
+
+esp_err_t ExampleBoard::ConfigureMDNS(void)
+{
+    esp_err_t res = mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0);
     if (res != ESP_OK) {
         ESP_LOGE(TAG, "0x%x mdns_service_add _http !", res);
         return res;
@@ -131,11 +145,8 @@ esp_err_t ExampleBoard::PostInit(void)
     return ESP_OK;
 }
 
-void ExampleBoard::StopCurrentWiFiMode(void)
-{
-    httpServer.StopServer();
-    StopWiFiMode();
-}
+
+
 
 void ExampleBoard::PowerOn(void)
 {

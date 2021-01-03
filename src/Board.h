@@ -124,6 +124,13 @@ public:
     esp_err_t StartStation(uint8_t maxRetries);
 
     /**
+     * @brief Returns true if connected to an AP
+     */
+    bool IsConnectedToAP(void);
+
+    esp_err_t RestartStationMode(uint8_t maxRetries);
+
+    /**
      * @brief Stop the AP or station mode
      */
     void StopWiFiMode(void);

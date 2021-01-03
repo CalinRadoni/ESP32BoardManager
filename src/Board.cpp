@@ -397,6 +397,26 @@ esp_err_t Board::ConnectToAP(uint8_t apIdx)
     return err;
 }
 
+bool Board::IsConnectedToAP(void)
+{
+    return (theWiFiManager.Status() == WiFiManagerStatus::staConnected);
+}
+
+esp_err_t Board::RestartStationMode(uint8_t maxRetries)
+{
+    CleanupMDNS();
+    theWiFiManager.Stop(true);
+    events.ClearBits(xBitALL);
+
+    esp_err_t err = StartStation(maxRetries);
+    if (err != ESP_OK){
+        ESP_LOGE(TAG, "Reconnection failed");
+        return err;
+    }
+
+    return InitializeMDNS();
+}
+
 void Board::StopWiFiMode(void)
 {
     theWiFiManager.Stop(true);

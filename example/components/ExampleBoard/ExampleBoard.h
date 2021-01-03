@@ -50,7 +50,11 @@ public:
 
     virtual esp_err_t PostInit(void);
 
-    void StopCurrentWiFiMode(void);
+
+    esp_err_t StartTheServers(void);
+    void StopTheServers(void);
+    esp_err_t ConfigureMDNS(void);
+
 
     /**
      * @brief Turn off the output power

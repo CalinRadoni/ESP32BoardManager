@@ -49,15 +49,12 @@ By overriding this function you can do the final tasks before main program start
 
 ## Reconnection
 
-If Board's events.GetBits() have the xBitStaDisconnected set the connection to the AP has been lost.
+Check the board connection status by calling `IsConnectedToAP` function.
 
 To reconnect you should:
 
 - stop any server (HTTP, HTTTPS, MQTT, etc.)
-- stop mDNS
-- call Board's StopWiFiMode()
-- call Board's events.ClearBits(xBitALL)
-- call Board's StartStation()
-- if StartStation returns ESP_OK:
+- call `RestartStationMode`
+- if `RestartStationMode` returns ESP_OK:
   - start the servers (HTTP, HTTTPS, MQTT, etc.)
-  - start mDNS
+  - configure mDNS
