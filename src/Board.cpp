@@ -39,10 +39,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static const char* TAG = "Board";
 
-const uint64_t usInOneHour       = 3600000000ULL;
+const uint64_t usInOneHour     = 3600000000ULL;
 
-const uint32_t msToWaitForScan   = 120000UL;
-const uint32_t msToWaitToConnect =  60000UL;
+const uint32_t msToWaitForScan = 120000UL;
+const uint32_t msWaitToConnect =  60000UL;
 
 const char* defaultDeviceName = "pax-device";
 const char* defaultDevicePass = "paxxword";
@@ -313,24 +313,42 @@ esp_err_t Board::StartAP(void)
     return ESP_OK;
 }
 
-esp_err_t Board::StartStation()
+esp_err_t Board::StartStation(uint8_t maxRetries)
 {
+    if (configuration == nullptr) return ESP_ERR_INVALID_ARG;
+
     uint8_t idx = 0;
     bool done = false;
+    uint8_t rcnt = 0;
     esp_err_t res = ESP_FAIL;
 
-    if (configuration == nullptr) return ESP_ERR_INVALID_ARG;
+    if (maxRetries < 1) maxRetries = 1;
 
     while (!done && (idx < WiFiConfigCnt)) {
         if (configuration->ap[idx].CheckData()) {
-            res = ConnectToAP(idx);
-            if (res == ESP_OK) {
-                // connected to an AP
-                ESP_LOGI(TAG, "Connected to \"%s\"", configuration->ap[idx].ssid.c_str());
-                done = true;
+            rcnt = 0;
+            while (rcnt < maxRetries) {
+                rcnt++;
+                ESP_LOGI(TAG, "Trying to connect to \"%s\", %d of %d ...", configuration->ap[idx].ssid.c_str(), rcnt, maxRetries);
+                res = ConnectToAP(idx);
+                if (res == ESP_OK) {
+                    // connected to AP
+                    ESP_LOGI(TAG, "... connected to \"%s\"", configuration->ap[idx].ssid.c_str());
+                    done = true;
+                    rcnt = maxRetries;
+                }
+                else {
+                    // failed to connect to AP
+                    ESP_LOGE(TAG, "... failed to connect to \"%s\"", configuration->ap[idx].ssid.c_str());
+
+                    // wait some random ms
+                    uint32_t rndWait = 100 + (esp_random() & 0x1FF);
+                    vTaskDelay(rndWait / portTICK_PERIOD_MS);
+                }
             }
-            else {
-                ESP_LOGE(TAG, "Failed to connect to \"%s\"", configuration->ap[idx].ssid.c_str());
+
+            if (!done) {
+                // prepare for the next AP config
                 ++idx;
             }
         }
@@ -359,7 +377,9 @@ esp_err_t Board::ConnectToAP(uint8_t apIdx)
         ESP_LOGE(TAG, "Connect error");
     }
     else {
-        EventBits_t bits = events.WaitForAnyBit(xBitStaConnected | xBitStaDisconnected, msToWaitToConnect);
+        // waits for a connect, disconnect or timeout event
+        // and clears event bits on exit
+        EventBits_t bits = events.WaitForAnyBit(xBitStaConnected | xBitStaDisconnected, msWaitToConnect);
         if ((bits & xBitStaDisconnected) != 0) {
             ESP_LOGW(TAG, "Disconnected, reason %d", theWiFiManager.GetDisconnectReason());
             err = ESP_FAIL;

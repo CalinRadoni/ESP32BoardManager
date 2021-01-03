@@ -115,9 +115,13 @@ public:
      * Tries to connect and wait for connection to complete or timeout.
      * This function can be called from the overridden PostInit function.
      *
+     * After each failed retry the function waits a random time between 100ms and 600ms.
+     *
+     * @param apIdx the index of the AP configuration to use
+     *
      * @returns ESP_ERR_INVALID_ARG if configuration is nullptr
      */
-    esp_err_t StartStation(void);
+    esp_err_t StartStation(uint8_t maxRetries);
 
     /**
      * @brief Stop the AP or station mode
@@ -155,10 +159,12 @@ protected:
      *
      * Tries to connect and wait for connection to complete or timeout.
      *
-     * @returns ESP_ERR_INVALID_ARG if configuration is nullptr
-     * @returns ESP_ERR_INVALID_ARG if AP index is >= WiFiConfigCnt
+     * @param apIdx the index of the AP configuration to use
+     *
+     * @return ESP_ERR_INVALID_ARG if configuration is nullptr
+     * @return ESP_ERR_INVALID_ARG if AP index is >= WiFiConfigCnt
      */
-    esp_err_t ConnectToAP(uint8_t);
+    esp_err_t ConnectToAP(uint8_t apIdx);
 
     esp_err_t InitializeMDNS(void);
     void CleanupMDNS(void);
