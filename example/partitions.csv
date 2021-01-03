@@ -1,0 +1,6 @@
+# Sizes: OTA=1920k, NVS=212k
+# Name, Type, SubType, Offset, Size, Flags
+nvs,data,nvs,0x9000,0x35000
+otadata,data,ota,0x3E000,0x2000
+ota0,app,ota_0,0x40000,0x1E0000
+ota1,app,ota_1,0x220000,0x1E0000
