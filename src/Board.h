@@ -43,16 +43,19 @@ public:
      *
      * This functions does, in order:
      * - calls EarlyInit()
-     * - Initialize NVS
-     * - Initialize the TCP/IP adapter
+     * - initialize NVS and read configuration from NVS
+     * - initialize the underlying TCP/IP stack
      * - calls CriticalInit()
-     * - reads configuration from NVS
      * - calls BoardInit()
      * - calls PostInit()
      *
-     * The execution is transfered to GoodBye function when:
-     * - NVS Initialization fails
-     * - CriticalInit does not return ESP_OK
+     * The execution is transfered to the GoodBye function when any step until
+     * BoardInit fails with one exception: if configuration cannot be read from NVS
+     * or is not valid a default one is created.
+     *
+     * If BoardInit fails the Initialize will return.
+     *
+     * For more and detailed information see the workflow file in docs.
      */
     esp_err_t Initialize(void);
 
@@ -71,8 +74,6 @@ public:
      */
     void GoodBye(void);
 
-    esp32hal::CPU esp32;
-
     /**
      * @brief Returns the base MAC address which is factory-programmed by Espressif in BLK0 of EFUSE.
      *
@@ -89,11 +90,22 @@ public:
      */
     void Restart(void);
 
+    /**
+     * @brief Initialize the WiFi
+     *
+     * This function can be called from the overridden BoardInit function
+     */
     esp_err_t InitializeWiFi(void);
+
+    /**
+     * @brief Call this function if WiFi is not needed any more
+     */
     esp_err_t CleanWiFi(void);
 
     /**
      * @brief Start the board in AP mode
+     *
+     * This function can be called from the overridden PostInit function.
      */
     esp_err_t StartAP(void);
 
@@ -101,11 +113,15 @@ public:
      * @brief Connect to one of the saved APs
      *
      * Tries to connect and wait for connection to complete or timeout.
+     * This function can be called from the overridden PostInit function.
      *
      * @returns ESP_ERR_INVALID_ARG if configuration is nullptr
      */
     esp_err_t StartStation(void);
 
+    /**
+     * @brief Stop the AP or station mode
+     */
     void StopWiFiMode(void);
 
     /**

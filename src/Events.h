@@ -54,6 +54,13 @@ public:
     void ClearBits(EventBits_t);
 
     /**
+     * @brief Get event bits
+     *
+     * @attention This function should NOT be called from an interrupt !
+     */
+    EventBits_t GetBits(void);
+
+    /**
      * @brief Set event bits
      *
      * @attention This function should NOT be called from an interrupt !

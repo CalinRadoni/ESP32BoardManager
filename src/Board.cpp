@@ -91,6 +91,15 @@ esp_err_t Board::Initialize(void)
         return err;
     }
 
+    err = configuration->ReadFromNVS();
+    if (err != ESP_OK) {
+        // the stored configuration is not valid ...
+        ESP_LOGE(TAG, "0x%x configuration->ReadFromNVS", err);
+        // ... build an empty one
+        configuration->InitData();
+        ESP_LOGW(TAG, "Configuration initialized to default values");
+    }
+
     err = esp_event_loop_create_default();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x esp_event_loop_create_default", err);
@@ -122,15 +131,6 @@ esp_err_t Board::Initialize(void)
         ESP_LOGE(TAG, "0x%x CriticalInit", err);
         GoodBye();
         return err;
-    }
-
-    err = configuration->ReadFromNVS();
-    if (err != ESP_OK) {
-        // the stored configuration is not valid ...
-        ESP_LOGE(TAG, "0x%x configuration->ReadFromNVS", err);
-        // ... build an empty one
-        configuration->InitData();
-        ESP_LOGW(TAG, "Configuration initialized to default values");
     }
 
     err = BoardInit();

@@ -57,6 +57,14 @@ void EventGroupHandler::ClearBits(EventBits_t eventBits)
         xEventGroupClearBits(xEvents, eventBits);
 }
 
+EventBits_t EventGroupHandler::GetBits(void)
+{
+    if (xEvents == NULL)
+        return (EventBits_t)0;
+
+    return xEventGroupGetBits(xEvents);
+}
+
 void EventGroupHandler::SetBits(EventBits_t eventBits)
 {
     if (xEvents != NULL)

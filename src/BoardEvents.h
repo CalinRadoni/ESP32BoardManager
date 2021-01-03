@@ -27,6 +27,11 @@ const EventBits_t xBitStaDisconnected     = ( 1 << 1 );
 const EventBits_t xBitScanDone            = ( 1 << 2 );
 const EventBits_t xBitAPStarted           = ( 1 << 3 );
 const EventBits_t xBitAPStopped           = ( 1 << 4 );
-const EventBits_t xBitCredentialsReceived = ( 1 << 5 );
+
+/**
+ * EventBits_t is 16 or 32 bits long.
+ * See it's documentation for more information.
+ */
+const EventBits_t xBitALL = 0xFFFF;
 
 #endif
