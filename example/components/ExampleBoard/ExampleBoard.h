@@ -55,17 +55,6 @@ public:
     void StopTheServers(void);
     esp_err_t ConfigureMDNS(void);
 
-
-    /**
-     * @brief Turn off the output power
-     */
-    void PowerOn(void);
-
-    /**
-     * @brief Turn on the output power
-     */
-    void PowerOff(void);
-
     /**
      * @brief Retuns true if the onboard button is pressed
      */

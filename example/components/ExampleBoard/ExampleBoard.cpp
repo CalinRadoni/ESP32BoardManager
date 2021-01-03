@@ -145,19 +145,6 @@ esp_err_t ExampleBoard::ConfigureMDNS(void)
     return ESP_OK;
 }
 
-
-
-
-void ExampleBoard::PowerOn(void)
-{
-    //
-}
-
-void ExampleBoard::PowerOff(void)
-{
-    //
-}
-
 bool ExampleBoard::OnboardButtonPressed(void)
 {
     return (gpio_get_level(GPIO_BOOT) == 0) ? true : false;

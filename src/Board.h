@@ -43,6 +43,7 @@ public:
      *
      * This functions does, in order:
      * - calls EarlyInit()
+     * - calls PowerPeripherals(true)
      * - initialize NVS and read configuration from NVS
      * - initialize the underlying TCP/IP stack
      * - calls CriticalInit()
@@ -63,6 +64,13 @@ public:
     virtual esp_err_t CriticalInit(void) = 0;
     virtual esp_err_t BoardInit(void) = 0;
     virtual esp_err_t PostInit(void) = 0;
+
+    /**
+     * @brief Turn on or off the power for peripherals
+     *
+     * If the board have this functionality override this function in your dedicated class.
+     */
+    virtual bool PowerPeripherals(bool);
 
     /**
      * @brief Executes vTaskDelay every 100ms

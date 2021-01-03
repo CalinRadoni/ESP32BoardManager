@@ -14,6 +14,7 @@ The `Initialize` function will, in order:
 
 - call esp32hal::CPU cpu.ReadChipInfo
 - call `EarlyInit` and call `GoodBye` if that fails.
+- call PowerPeripherals(true) and call `GoodBye` if that fails.
 - initialize NVS and call `GoodBye` if that fails.
 - read configuration from NVS. If the stored configuration is not valid it will build an empty, default, one.
 - create the default event loop and call `GoodBye` if that fails.

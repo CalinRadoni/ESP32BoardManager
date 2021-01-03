@@ -79,6 +79,12 @@ esp_err_t Board::Initialize(void)
         return err;
     }
 
+    if (!PowerPeripherals(true)) {
+        ESP_LOGE(TAG, "PowerPeripherals failed");
+        GoodBye();
+        return ESP_FAIL;
+    }
+
     if (configuration == nullptr) {
         ESP_LOGE(TAG, "configuration is null");
         GoodBye();
@@ -108,7 +114,7 @@ esp_err_t Board::Initialize(void)
     }
 
     if (!events.Create()) {
-        ESP_LOGE(TAG, "0x%x events.Create", err);
+        ESP_LOGE(TAG, "events.Create failed");
         GoodBye();
         return err;
     }
@@ -235,6 +241,11 @@ void Board::SetBoardInfo(void)
         boardInfo.hwInfo += buffer.data();
     }
     else { ESP_LOGE(TAG, "snprintf hwInfo"); }
+}
+
+bool Board::PowerPeripherals(bool)
+{
+    return true;
 }
 
 void Board::DoNothingForever(void)

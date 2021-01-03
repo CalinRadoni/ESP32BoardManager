@@ -79,8 +79,6 @@ extern "C" {
         }
         ESP_LOGI(TAG, "Board initialized OK");
 
-        board.PowerOn();
-
         xTaskCreate(HTTPTask, "HTTP command handling task", 2048, NULL, uxTaskPriorityGet(NULL) + 1, &xHTTPHandlerTask);
         if (xHTTPHandlerTask != NULL) {
             ESP_LOGI(TAG, "HTTP command handling task created.");
