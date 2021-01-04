@@ -61,7 +61,7 @@ public:
     bool OnboardButtonPressed(void);
 
     /**
-     * @brief The server queue is used read the commands received by the HTTP server
+     * @brief The server queue is used to read the commands received by the HTTP server
      */
     QueueHandle_t GetHttpServerQueue(void);
 

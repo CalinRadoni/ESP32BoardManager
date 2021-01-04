@@ -79,6 +79,9 @@ public:
 
     /**
      * @brief Enters deep sleep for one hour
+     *
+     * This function does not return !
+     * Also, it does not shut down WiFi, BT, or any other higher level protocol connections gracefully.
      */
     void GoodBye(void);
 
