@@ -60,6 +60,25 @@ public:
      */
     esp_err_t Initialize(void);
 
+    /**
+     * @brief Returns the severity level of failure for Initialize function
+     *
+     * If Initialize() fails, use this function to determine the level of severity of the failure
+     *
+     * - 0 means no failure
+     * - 1 means PostInit failed
+     * - 2 means BoardInit failed
+     * - 3 reserved, not used
+     * - 4 reserved, not used
+     * - 5 means that one of the actions from start to CriticalInit, inclusive, failed
+     *
+     * A failure level greater then 2 should be equivalent to a critical system failure.
+     * The severity of Levels 1 and 2 depends strictly of the functionality you've added in PostInit function.
+     *
+     * @return uint8_t
+     */
+    uint8_t InitFailSeverity(void);
+
     virtual esp_err_t EarlyInit(void) = 0;
     virtual esp_err_t CriticalInit(void) = 0;
     virtual esp_err_t BoardInit(void) = 0;
@@ -73,17 +92,25 @@ public:
     virtual bool PowerPeripherals(bool);
 
     /**
-     * @brief Executes vTaskDelay every 100ms
-     */
-    void DoNothingForever(void);
-
-    /**
-     * @brief Enters deep sleep for one hour
+     * @brief Enters deep sleep for specified number of minutes
      *
      * This function does not return !
-     * Also, it does not shut down WiFi, BT, or any other higher level protocol connections gracefully.
+     *
+     * It only calls `esp_deep_sleep`.
+     * It does not shut down WiFi, BT, or any other higher level protocol connections gracefully.
      */
-    void GoodBye(void);
+    void EnterDeepSleep(uint32_t minutes);
+
+    /**
+     * @brief Restarts the board after specified number of seconds
+     *
+     * This function does not return !
+     *
+     * It waits using `vTaskDelay` so it is not really accurate.
+     * After waiting it only calls `esp_restart`.
+     * It does not shut down WiFi, BT, or any other higher level protocol connections gracefully.
+     */
+    void Restart(uint32_t seconds);
 
     /**
      * @brief Returns the base MAC address which is factory-programmed by Espressif in BLK0 of EFUSE.
@@ -93,13 +120,6 @@ public:
      * Returns a pointer to the private variable MAC.
      */
     uint8_t* GetMAC(void);
-
-    /**
-     * @brief Restart the board
-     *
-     * Uses the esp_restart function so this function does not return.
-     */
-    void Restart(void);
 
     /**
      * @brief Initialize the WiFi
@@ -166,6 +186,8 @@ protected:
 
     bool initialized;
     bool netInitialized;
+
+    uint8_t initFailSeverity;
 
     /**
      * @brief Placeholder for base MAC address

@@ -39,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static const char* TAG = "Board";
 
-const uint64_t usInOneHour     = 3600000000ULL;
+const uint64_t usInOneMinute   = 60000000UL;
 
 const uint32_t msToWaitForScan = 120000UL;
 const uint32_t msWaitToConnect =  60000UL;
@@ -53,6 +53,7 @@ Board::Board(void)
 {
     initialized = false;
     netInitialized = false;
+    initFailSeverity = 0;
     memset(MAC, 0, 6);
     configuration = nullptr;
 }
@@ -70,30 +71,29 @@ esp_err_t Board::Initialize(void)
     if (initialized)
         return ESP_ERR_INVALID_STATE;
 
+    // --- severity level 5 ---
+    initFailSeverity = 5;
+
     cpu.ReadChipInfo();
 
     esp_err_t err = EarlyInit();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x EarlyInit", err);
-        GoodBye();
         return err;
     }
 
     if (!PowerPeripherals(true)) {
         ESP_LOGE(TAG, "PowerPeripherals failed");
-        GoodBye();
         return ESP_FAIL;
     }
 
     if (configuration == nullptr) {
         ESP_LOGE(TAG, "configuration is null");
-        GoodBye();
         return ESP_FAIL;
     }
     err = configuration->InitializeNVS();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x configuration->InitializeNVS", err);
-        GoodBye();
         return err;
     }
 
@@ -109,13 +109,11 @@ esp_err_t Board::Initialize(void)
     err = esp_event_loop_create_default();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x esp_event_loop_create_default", err);
-        GoodBye();
         return err;
     }
 
     if (!events.Create()) {
         ESP_LOGE(TAG, "events.Create failed");
-        GoodBye();
         return err;
     }
     theWiFiManager.events = &events;
@@ -127,7 +125,6 @@ esp_err_t Board::Initialize(void)
     err = esp_netif_init();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x esp_netif_init", err);
-        GoodBye();
         return err;
     }
     netInitialized = true;
@@ -135,9 +132,15 @@ esp_err_t Board::Initialize(void)
     err = CriticalInit();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x CriticalInit", err);
-        GoodBye();
         return err;
     }
+
+    // --- severity level 4 ---
+
+    // --- severity level 3 ---
+
+    // --- severity level 2 ---
+    initFailSeverity = 2;
 
     err = BoardInit();
     if (err != ESP_OK) {
@@ -164,14 +167,23 @@ esp_err_t Board::Initialize(void)
 
     SetBoardInfo();
 
+    // --- severity level 1 ---
+    initFailSeverity = 1;
+
     err = PostInit();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "0x%x PostInit", err);
         return err;
     }
 
+    initFailSeverity = 0;
     initialized = true;
     return ESP_OK;
+}
+
+uint8_t Board::InitFailSeverity(void)
+{
+    return initFailSeverity;
 }
 
 void Board::SetBoardInfo(void)
@@ -228,7 +240,9 @@ void Board::SetBoardInfo(void)
                 std::snprintf(bc.data(), bc.size(), formatString.c_str(), cpu.numberOfCores);
                 boardInfo.hwInfo += bc.data();
             }
-            else { ESP_LOGE(TAG, "snprintf hwInfo"); }
+            else {
+                ESP_LOGE(TAG, "snprintf hwInfo");
+            }
         }
     }
 
@@ -240,7 +254,9 @@ void Board::SetBoardInfo(void)
         std::snprintf(buffer.data(), buffer.size(), formatString.c_str(), cpu.espFlashID, cpu.espFlashSize / (1024 * 1024));
         boardInfo.hwInfo += buffer.data();
     }
-    else { ESP_LOGE(TAG, "snprintf hwInfo"); }
+    else {
+        ESP_LOGE(TAG, "snprintf hwInfo");
+    }
 }
 
 bool Board::PowerPeripherals(bool)
@@ -248,17 +264,27 @@ bool Board::PowerPeripherals(bool)
     return true;
 }
 
-void Board::DoNothingForever(void)
+void Board::EnterDeepSleep(uint32_t minutes)
 {
-    while (true) {
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-    }
+    uint64_t sleepTime = usInOneMinute;
+    sleepTime *= minutes;
+
+    ESP_LOGI(TAG, "Entering deep sleep for %d minutes.", minutes);
+
+    esp_deep_sleep(sleepTime);
 }
 
-void Board::GoodBye(void)
+void Board::Restart(uint32_t seconds)
 {
-    uint64_t sleepTimeUS = usInOneHour;
-    esp_deep_sleep(sleepTimeUS);
+    while (seconds > 0) {
+        ESP_LOGI(TAG, "Restarting in %d seconds...", seconds);
+        for (uint8_t i = 10; i > 0; --i) {
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+        }
+        --seconds;
+    }
+
+    esp_restart();
 }
 
 uint8_t* Board::GetMAC(void)
@@ -274,11 +300,6 @@ uint8_t* Board::GetMAC(void)
     }
 
     return MAC;
-}
-
-void Board::Restart(void)
-{
-    esp_restart();
 }
 
 esp_err_t Board::InitializeWiFi(void)

@@ -90,8 +90,18 @@ extern "C" {
 
         esp_err_t err = board.Initialize();
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "Initialization failed !");
-            board.DoNothingForever();
+            uint8_t initFailSeverity = board.InitFailSeverity();
+
+            board.PowerPeripherals(false);
+
+            ESP_LOGE(TAG, "Initialization failed with severity level %d !", initFailSeverity);
+            if (initFailSeverity == 5) {
+                // critical system error
+                board.EnterDeepSleep(60);
+            }
+
+            // retry in a few minutes, maybe it will recover ?
+            board.Restart(120 + (esp_random() & 0x3F));
         }
         ESP_LOGI(TAG, "Board initialized OK");
 
@@ -103,7 +113,8 @@ extern "C" {
         }
         else {
             ESP_LOGE(TAG, "Failed to create the HTTP command handling task !");
-            board.DoNothingForever();
+            board.PowerPeripherals(false);
+            board.EnterDeepSleep(10);
         }
 
         xTaskCreate(LoopTask, "Loop task", 4096, NULL, uxTaskPriorityGet(NULL) + 1, &xLoopTask);
@@ -112,8 +123,8 @@ extern "C" {
         }
         else {
             ESP_LOGE(TAG, "Failed to create the Loop task !");
-            board.DoNothingForever();
+            board.PowerPeripherals(false);
+            board.EnterDeepSleep(10);
         }
     }
-
 }
