@@ -58,6 +58,10 @@ a:focus {
     text-decoration: underline;
 }
 
+p {
+    margin: 0.5rem 0;
+}
+
 .nav {
     margin: 1rem 0;
 }
@@ -88,7 +92,7 @@ a:focus {
 }
 
 .content {
-    padding: 1rem;
+    padding: 0 1rem 1rem 1rem;
     flex: 1 1 0;
     display: flex;
     flex-flow: column;

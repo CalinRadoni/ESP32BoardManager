@@ -31,7 +31,7 @@ class Configuration {
             let a = document.getElementById(elemPrefix + key);
             if (a !== null) {
                 if (key === 'version') {
-                    a.innerHTML = 'Configuration version ' + value;
+                    a.innerHTML = 'v' + value;
                 }
                 else {
                     a.value = value;

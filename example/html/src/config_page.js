@@ -10,7 +10,9 @@ class ConfigPage {
         if (!this.pdiv) return;
 
         let s = '<div class="config">' +
-            '<div class="cfgrow"><div class="cfgcell"><h3>Configuration</h3></div></div>' +
+            '<div class="cfgrow"><div class="cfgcell">' +
+            '<h3>Configuration <span class="cfgI" id="pversion"></span></h3>' +
+            '</div></div>' +
             '<div class="cfgrow">' +
                 this.addTextInput('Name', 'pname', '') +
                 this.addPasswordInput('Pass', 'ppass', '') +
@@ -24,7 +26,7 @@ class ConfigPage {
                 this.addPasswordInput('Backup password', 'pap2p', '') +
             '</div>' +
             '<div class="cfgrow">' +
-                '<div class="cfgcell lh2"><p class="cfgI" id="pversion"></p></div>' +
+                '<div class="cfgcell lh2"></div>' +
                 '<div class="cfgcell lh2 aright">' +
                     '<button class="mLeft" onclick="app.GetConfig()">Reload</button>' +
                     '<button class="mLeft" onclick="app.SaveConfig()">Save</button>' +

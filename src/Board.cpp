@@ -207,11 +207,13 @@ void Board::SetBoardInfo(void)
         const char hex[17] = "0123456789abcdef";
         const uint8_t *sha256 = appDescription->app_elf_sha256;
         boardInfo.elfSHA256.clear();
-        boardInfo.elfSHA256.reserve(64);
+        boardInfo.elfSHA256.reserve(72);
         for (uint8_t i = 32; i > 0; --i) {
             boardInfo.elfSHA256 += hex[(*sha256 >> 4) & 0x0F];
             boardInfo.elfSHA256 += hex[*sha256 & 0x0F];
             ++sha256;
+            if(((i % 4) == 1) && (i > 1))
+                boardInfo.elfSHA256 += '-';
         }
         ESP_LOGI(TAG, "SHA256 of elf file: %s", boardInfo.elfSHA256.c_str());
     }
