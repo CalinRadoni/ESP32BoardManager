@@ -28,6 +28,8 @@ This is a *work-in-progress* and should be tested before use.
 
 The provided **example** is a working implementation that can be used as *Getting started* code.
 
+The initialization workflow is in the [workflow.md](docs/workflow.md) file.
+
 ### Web interface
 
 This is the current web interface:
