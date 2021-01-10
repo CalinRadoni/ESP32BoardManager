@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ExampleBoardHTTPSrv::ExampleBoardHTTPSrv() : PaxHttpServer()
 {
-    //
+    exampleStatusData = 0;
 }
 
 ExampleBoardHTTPSrv::~ExampleBoardHTTPSrv(void)
@@ -42,5 +42,23 @@ ExampleBoardHTTPSrv::~ExampleBoardHTTPSrv(void)
 
 char* ExampleBoardHTTPSrv::CreateJSONStatusString(bool addWhitespaces)
 {
-    return nullptr;
+    char *str = nullptr;
+
+    if (configuration == nullptr) { return str; }
+    if (boardInfo == nullptr) { return str; }
+
+    ++exampleStatusData;
+
+    cJSON *cfg = cJSON_CreateObject();
+
+    if (cJSON_AddNumberToObject(cfg, "exampleStatusData", exampleStatusData) == NULL) {
+        cJSON_Delete(cfg);
+        return str;
+    }
+
+    if (addWhitespaces) { str = cJSON_Print(cfg); }
+    else                { str = cJSON_PrintUnformatted(cfg); }
+
+    cJSON_Delete(cfg);
+    return str;
 }

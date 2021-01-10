@@ -1,13 +1,13 @@
-const boardInfoNames = ['title', 'tagline', 'appName', 'appVersion', 'link', 'compileTime', 'idfVersion', 'elfSHA256', 'hwInfo'];
-class BoardInfo {
+const statusInfoNames = ['exampleStatusData'];
+class StatusInfo {
     constructor() {
-        this.keyPrefix = 'data_';
+        this.keyPrefix = 'status_';
         this.initialize();
     }
 
     initialize() {
-        for (let i = 0; i < boardInfoNames.length; ++i) {
-            this[this.keyPrefix + boardInfoNames[i]] = '';
+        for (let i = 0; i < statusInfoNames.length; ++i) {
+            this[this.keyPrefix + statusInfoNames[i]] = '';
         }
     }
 

@@ -1,26 +1,34 @@
+var boardInfo  = new BoardInfo();
+var statusInfo = new StatusInfo();
+
 class App {
     constructor(logger) {
         //
     }
 
     InfoFromString(jStr) {
-        this.boardInfo.setFromString(jStr);
+        boardInfo.setFromString(jStr);
         this.toPage();
         systemPage.updateInfo();
     }
 
     toPage() {
-        document.title = this.boardInfo.get('title');
+        document.title = boardInfo.get('title');
 
         let a = document.getElementById('title');
         if (a !== null)
-            a.innerHTML = this.boardInfo.get('title');
+            a.innerHTML = boardInfo.get('title');
 
         a = document.getElementById('tagline');
         if (a !== null) {
-            a.innerHTML = this.boardInfo.get('tagline');
+            a.innerHTML = boardInfo.get('tagline');
             a.hidden = (a.innerHTML.length > 0);
         }
+    }
+
+    StatusFromString(jStr) {
+        statusInfo.setFromString(jStr);
+        homePage.updateInfo();
     }
 
     Initialize() {
@@ -31,11 +39,14 @@ class App {
         configPage.set_parent_div(appel);
         systemPage.set_parent_div(appel);
 
-        this.boardInfo = boardInfo;
         systemPage.set_info_object(boardInfo);
+        homePage.set_status_object(statusInfo);
 
         this.GetInfo();
         this.GetConfig();
+        this.GetStatus();
+
+        this.statusTimer = setInterval(function() { app.GetStatus(); }, 2000);
 
         this.HashHandler();
         window.addEventListener('hashchange', this.HashHandler, false);
@@ -92,7 +103,7 @@ class App {
         xhr.onload = function() {
             if (xhr.readyState === xhr.DONE) {
                 if (xhr.status === 200) {
-                    // do something with the response
+                    app.StatusFromString(xhr.responseText);
                 }
             }
         };
@@ -136,6 +147,9 @@ class App {
         let str = document.getElementById('userData').value;
         let val = parseInt(str, 16);
         this.SendCmd(3, val);
+    }
+    ResetBoard() {
+        this.SendCmd(0xFE, 0);
     }
 
     UpFW() {
@@ -203,10 +217,10 @@ class App {
     }
 }
 
-var logger = new Logger();
-var homePage = new HomePage();
+var logger        = new Logger();
+var homePage      = new HomePage();
 var configuration = new Configuration();
-var configPage = new ConfigPage();
-var boardInfo = new BoardInfo();
+var configPage    = new ConfigPage();
+
 var app = new App();
 app.Initialize();

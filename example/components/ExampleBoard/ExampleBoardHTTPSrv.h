@@ -28,6 +28,8 @@ public:
     ExampleBoardHTTPSrv(void);
     virtual ~ExampleBoardHTTPSrv();
 
+    uint32_t exampleStatusData;
+
 protected:
     /**
      * @warning Delete returned string with 'free' !
