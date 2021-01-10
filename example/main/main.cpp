@@ -77,6 +77,11 @@ extern "C" {
             if (xQueueReceive(serverQueue, &httpCmd, portMAX_DELAY) == pdPASS) {
                 cmd.command = httpCmd.command;
                 cmd.data = httpCmd.data;
+
+                if (cmd.command == 0xFE) {
+                    vTaskDelay (2000 / portTICK_PERIOD_MS);
+                    esp_restart();
+                }
             }
         }
 
