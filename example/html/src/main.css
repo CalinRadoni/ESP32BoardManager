@@ -137,6 +137,8 @@ p {
 }
 .colorBox {
     min-height: 2rem;
+    display: inline-block;
+    width: 16.6%;
 }
 
 .intSel {
