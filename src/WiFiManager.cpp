@@ -169,7 +169,7 @@ esp_err_t WiFiManager::ConfigStation(WiFiConfig *cfg)
     if (err == ESP_OK) {
         wifi_config_t wifi_config;
         cfg->SetStationConfig(&wifi_config);
-        err = esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config);
+        err = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
     }
     return err;
 }
@@ -188,7 +188,7 @@ esp_err_t WiFiManager::ConfigAP(WiFiConfig *cfg)
         wifi_config.ap.channel         = 0;
         wifi_config.ap.max_connection  = 4;
         wifi_config.ap.beacon_interval = 100;
-        err = esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config);
+        err = esp_wifi_set_config(WIFI_IF_AP, &wifi_config);
     }
     return err;
 }
@@ -206,7 +206,7 @@ esp_err_t WiFiManager::ConfigAPStation(WiFiConfig* staCfg, WiFiConfig* apCfg)
     wifi_config_t wifi_config;
 
     staCfg->SetStationConfig(&wifi_config);
-    err = esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config);
+    err = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
     if (err != ESP_OK) return err;
 
     apCfg->SetAPConfig(&wifi_config);
@@ -215,7 +215,7 @@ esp_err_t WiFiManager::ConfigAPStation(WiFiConfig* staCfg, WiFiConfig* apCfg)
     wifi_config.ap.channel         = 0;
     wifi_config.ap.max_connection  = 4;
     wifi_config.ap.beacon_interval = 100;
-    err = esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config);
+    err = esp_wifi_set_config(WIFI_IF_AP, &wifi_config);
     if (err != ESP_OK) return err;
 
     return err;
@@ -227,7 +227,7 @@ esp_err_t WiFiManager::ConfigStationScan(void)
     if (err == ESP_OK) {
         wifi_config_t wifi_config;
         memset(&wifi_config, 0, sizeof(wifi_config_t));
-        err = esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config);
+        err = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
     }
     return err;
 }
