@@ -7,11 +7,16 @@ jobs:
     name: Builder for ESP32BoardManager example application
     runs-on: ubuntu-20.04
 
+    env:
+      main-path: app
+      app-path: app/example
+      out-file: Example-ESP32BoardManager
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          path: app
+          path: ${{ env.main-path }}
 
       - name: Create the code library
         run: |
@@ -25,10 +30,14 @@ jobs:
         uses: CalinRadoni/esp-idf-v4-container-action@v4.1
         id: execution
         with:
-          entrypoint: /github/workspace/app/example/action-build.sh
+          entrypoint: /github/workspace/${{ env.app-path }}/action-build.sh
 
       - name: Compute SHA256 for bin and elf files
         if: steps.execution.outputs.result == 0
         run: |
-          sha256sum -b "${{ github.workspace }}/app/example/build/Example-ESP32BoardManager.bin"
-          sha256sum -b "${{ github.workspace }}/app/example/build/Example-ESP32BoardManager.elf"
+          file="${{ github.workspace }}/${{ env.app-path }}/build/${{ env.out-file }}.bin"
+          hash=$(sha256sum -b "$file")
+          stat -c"$hash %s" "$file"
+          file="${{ github.workspace }}/${{ env.app-path }}/build/${{ env.out-file }}.elf"
+          hash=$(sha256sum -b "$file")
+          stat -c"$hash %s" "$file"
