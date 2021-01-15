@@ -10,7 +10,6 @@ jobs:
     env:
       main-path: app
       app-path: app/example
-      out-file: Example-ESP32BoardManager
 
     steps:
       - name: Checkout code
@@ -26,18 +25,20 @@ jobs:
           git clone --depth 1 https://github.com/CalinRadoni/ESP32SimpleOTA.git
           git clone --depth 1 https://github.com/CalinRadoni/ESP32HAL.git
 
-      - name: Action execution
+      - name: Build
         uses: CalinRadoni/esp-idf-v4-container-action@v4.1
-        id: execution
+        id: idf_build
         with:
           entrypoint: /github/workspace/${{ env.app-path }}/action-build.sh
 
       - name: Compute SHA256 for bin and elf files
-        if: steps.execution.outputs.result == 0
+        if: steps.idf_build.outputs.result == 0
         run: |
-          file="${{ github.workspace }}/${{ env.app-path }}/build/${{ env.out-file }}.bin"
-          hash=$(sha256sum -b "$file")
-          stat -c"$hash %s" "$file"
-          file="${{ github.workspace }}/${{ env.app-path }}/build/${{ env.out-file }}.elf"
-          hash=$(sha256sum -b "$file")
-          stat -c"$hash %s" "$file"
+          fileE=$(find "${{ github.workspace }}/${{ env.app-path }}/build" -maxdepth 1 -type f -name '*.elf')
+          fileB=${fileE%.elf}.bin
+          declare -a files
+          files=("$fileE" "$fileB")
+          for file in "${files[@]}"; do
+            hash=$(sha256sum -b "$file")
+            stat -c"${hash%% *} ${file##*/} %s" "$file"
+          done
