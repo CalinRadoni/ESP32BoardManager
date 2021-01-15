@@ -210,6 +210,7 @@ esp_err_t PaxHttpServer::HandleGetRequest(httpd_req_t* req)
     if (req == nullptr) return ESP_FAIL;
 
     std::string str = req->uri;
+    esp_err_t res;
 
     if (str == "/info.json") {
         return HandleGet_InfoJson(req);
@@ -224,7 +225,7 @@ esp_err_t PaxHttpServer::HandleGetRequest(httpd_req_t* req)
     }
 
     if ((str == "/") || (str == "/index.html")){
-        esp_err_t res = httpd_resp_set_type(req, HTTPD_TYPE_TEXT);
+        res = httpd_resp_set_type(req, HTTPD_TYPE_TEXT);
         if (res != ESP_OK) return res;
 
     #ifdef CONFIG_ESP32BM_WEB_Compressed_index
@@ -245,6 +246,10 @@ esp_err_t PaxHttpServer::HandleGetRequest(httpd_req_t* req)
         return httpd_resp_send(req, (const char *)index_html_start, index_html_end - index_html_start);
     }
     #endif
+
+    if (HandleGET_Custom(req, &res)) {
+        return res;
+    }
 
     httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "404 :)");
     return ESP_FAIL;
@@ -398,6 +403,7 @@ esp_err_t PaxHttpServer::HandlePostRequest(httpd_req_t* req)
     if (req == nullptr) return ESP_FAIL;
 
     std::string str = req->uri;
+    esp_err_t res;
 
     if (str == "/cmd.json") {
         return HandlePost_CmdJson(req);
@@ -408,14 +414,18 @@ esp_err_t PaxHttpServer::HandlePostRequest(httpd_req_t* req)
     }
 
     if (str == "/update") {
-        esp_err_t err = HandleOTA(req);
-        if (err == ESP_OK) {
+        res = HandleOTA(req);
+        if (res == ESP_OK) {
             httpd_resp_sendstr(req, "OTA OK.");
         }
         else {
             httpd_resp_sendstr(req, "OTA Failed !");
         }
-        return err;
+        return res;
+    }
+
+    if (HandlePOST_Custom(req, &res)) {
+        return res;
     }
 
     httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "404 :)");
@@ -539,6 +549,20 @@ esp_err_t PaxHttpServer::HandlePost_ConfigJson(httpd_req_t* req)
     httpd_resp_sendstr(req, "Command processed");
     return ESP_OK;
 }
+
+// -----------------------------------------------------------------------------
+
+bool PaxHttpServer::HandleGET_Custom(httpd_req_t *req, esp_err_t *res)
+{
+    return false;
+}
+
+bool PaxHttpServer::HandlePOST_Custom(httpd_req_t *req, esp_err_t *res)
+{
+    return false;
+}
+
+// -----------------------------------------------------------------------------
 
 esp_err_t PaxHttpServer::HandleOTA(httpd_req_t* req)
 {

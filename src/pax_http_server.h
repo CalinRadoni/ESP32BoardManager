@@ -95,6 +95,24 @@ protected:
     virtual esp_err_t HandlePost_CmdJson(httpd_req_t*);
     virtual esp_err_t HandlePost_ConfigJson(httpd_req_t*);
 
+    /**
+     * @brief Handles custom GET paths
+     *
+     * If this function returns false, a HTTPD_404_NOT_FOUND will be returned.
+     *
+     * You should handle all the cases, errors included, and return true.
+     */
+    virtual bool HandleGET_Custom(httpd_req_t*, esp_err_t*);
+
+    /**
+     * @brief Handles custom POST paths
+     *
+     * If this function returns false, a HTTPD_404_NOT_FOUND will be returned.
+     *
+     * You should handle all the cases, errors included, and return true.
+     */
+    virtual bool HandlePOST_Custom(httpd_req_t*, esp_err_t*);
+
     ESP32SimpleOTA *simpleOTA;
     esp_err_t HandleOTA(httpd_req_t*);
 
