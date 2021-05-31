@@ -3,7 +3,7 @@
 set -e
 
 script_name="HTML Builder"
-script_version="1.5.0"
+script_version="1.5.1"
 
 tmpDir="tmp"
 webDir="web"
@@ -50,6 +50,9 @@ function NodeHelp() {
     echo "    - inline-source and inline-source-cli"
     echo "    - jshint"
     echo "    - terser"
+    echo
+    echo "To update 'npm' run 'sudo npm install -g npm'"
+    echo "To update the modules run 'npm update' in this directory."
 }
 
 function BuildJS () {
